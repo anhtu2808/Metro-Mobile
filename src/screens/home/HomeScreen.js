@@ -1,8 +1,18 @@
 import React from "react";
-import { View, Text, StyleSheet, Image, FlatList } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  FlatList,
+  TouchableOpacity,
+} from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import { Video } from "expo-av";
 
 export default function HomeScreen() {
+  const navigation = useNavigation();
   const horizontalCards = [
     {
       id: "1",
@@ -19,14 +29,17 @@ export default function HomeScreen() {
     <FlatList
       ListHeaderComponent={
         <View>
-          <Image
-            source={require("../../assets/metro.jpg")}
+          <Video
+            source={require("../../assets/metro.mp4")}
             style={styles.image}
+            resizeMode="cover"
+            isLooping
+            shouldPlay
           />
           <View style={styles.board}>
             <View style={styles.iconBox}>
               <MaterialIcons name="local-atm" size={30} color="#000" />
-              <Text style={styles.iconLabel}>Buy Ticket</Text>
+              <Text style={styles.iconLabel}>Mua Vé</Text>
             </View>
             <View style={styles.iconBox}>
               <MaterialIcons
@@ -34,23 +47,30 @@ export default function HomeScreen() {
                 size={30}
                 color="#000"
               />
-              <Text style={styles.iconLabel}>My Ticket</Text>
+              <Text style={styles.iconLabel}>Vé Của Tôi</Text>
             </View>
             <View style={styles.iconBox}>
               <MaterialIcons name="sync" size={30} color="#000" />
-              <Text style={styles.iconLabel}>Adjust Ticket</Text>
+              <Text style={styles.iconLabel}>Điều Chỉnh Giá Vé</Text>
             </View>
             <View style={styles.iconBox}>
               <MaterialIcons name="tram" size={30} color="#000" />
-              <Text style={styles.iconLabel}>Route</Text>
+              <Text style={styles.iconLabel}>Hành Trình</Text>
             </View>
             <View style={styles.iconBox}>
               <MaterialIcons name="map" size={30} color="#000" />
-              <Text style={styles.iconLabel}>Map</Text>
+              <Text style={styles.iconLabel}>Bản Đồ</Text>
             </View>
             <View style={styles.iconBox}>
-              <MaterialIcons name="person" size={30} color="#000" />
-              <Text style={styles.iconLabel}>Account</Text>
+              <TouchableOpacity
+                style={styles.iconButton}
+                onPress={() => navigation.navigate("Login")}
+              >
+                <View style={styles.iconContent}>
+                  <MaterialIcons name="person" size={30} color="#000" />
+                  <Text style={styles.iconLabel}>Tài Khoản</Text>
+                </View>
+              </TouchableOpacity>
             </View>
           </View>
           <FlatList
@@ -117,5 +137,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 6,
     textAlign: "center",
+  },
+  iconButton: {
+    alignItems: "center",
+    width: "100%",
+  },
+  iconContent: {
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

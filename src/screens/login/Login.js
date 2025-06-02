@@ -19,10 +19,10 @@ function Login() {
     <View style={styles.container}>
       <Image source={require("../../assets/metro.jpg")} style={styles.image} />
       <View style={styles.board}>
-        <Text style={styles.title}>Welcome</Text>
+        <Text style={styles.title}>Chào Mừng Bạn</Text>
         <TextInput
           style={styles.textInput}
-          placeholder="Username"
+          placeholder="Tên Đăng Nhập"
           placeholderTextColor="#999"
           value={text}
           onChangeText={onChangeText}
@@ -30,7 +30,7 @@ function Login() {
         <View style={styles.passwordContainer}>
           <TextInput
             style={[styles.textInput, { flex: 1, marginVertical: 0 }]}
-            placeholder="Password"
+            placeholder="Mật Khẩu"
             secureTextEntry={!showPassword}
             autoCapitalize="none"
             placeholderTextColor="#999"
@@ -52,18 +52,18 @@ function Login() {
           style={styles.loginButton}
           onPress={() => Alert.alert("Login pressed")}
         >
-          <Text style={styles.loginButtonText}>Login</Text>
+          <Text style={styles.loginButtonText}>Đăng Nhập</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.loginGoogleButton}
           onPress={() => Alert.alert("Login pressed")}
         >
-          <Text style={styles.loginGoogleButtonText}>Login Google</Text>
+          <Text style={styles.loginGoogleButtonText}>Đăng Nhập Google</Text>
         </TouchableOpacity>
 
         <TouchableOpacity>
-          <Text style={styles.register}>Register</Text>
+          <Text style={styles.register}>Đăng ký</Text>
         </TouchableOpacity>
       </View>
     </View>
