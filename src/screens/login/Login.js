@@ -9,12 +9,13 @@ import {
   View,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 
 function Login() {
   const [number, onChangeNumber] = React.useState("");
   const [text, onChangeText] = React.useState("");
   const [showPassword, setShowPassword] = React.useState(false); // Add this line
-
+  const navigation = useNavigation();
   return (
     <View style={styles.container}>
       <Image source={require("../../assets/metro.jpg")} style={styles.image} />
@@ -62,7 +63,7 @@ function Login() {
           <Text style={styles.loginGoogleButtonText}>Đăng Nhập Google</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate("Register")}>
           <Text style={styles.register}>Đăng ký</Text>
         </TouchableOpacity>
       </View>
