@@ -58,8 +58,8 @@ export default function HomeScreen() {
               <Text style={styles.iconLabel}>Hành Trình</Text>
             </View>
             <View style={styles.iconBox}>
-              <MaterialIcons name="map" size={30} color="#000" />
-              <Text style={styles.iconLabel}>Bản Đồ</Text>
+              <MaterialIcons name="chat" size={30} color="#000" />
+              <Text style={styles.iconLabel}>Nhận xét</Text>
             </View>
             <View style={styles.iconBox}>
               <TouchableOpacity

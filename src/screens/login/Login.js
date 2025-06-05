@@ -58,7 +58,7 @@ function Login() {
 
         <TouchableOpacity
           style={styles.loginGoogleButton}
-          onPress={() => Alert.alert("Login pressed")}
+          onPress={() => navigation.navigate("Account")}
         >
           <Text style={styles.loginGoogleButtonText}>Đăng Nhập Google</Text>
         </TouchableOpacity>

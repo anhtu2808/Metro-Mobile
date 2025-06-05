@@ -53,7 +53,7 @@ const Register = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#e0f7fa",
   },
   textInput: {
     height: 50,

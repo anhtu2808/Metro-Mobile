@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import HomeScreen from "../screens/home/HomeScreen";
 import Login from "../screens/login/Login";
 import Register from "../screens/register/Register";
+import Account from "../screens/account/Account";
 
 const Stack = createNativeStackNavigator();
 
@@ -20,6 +21,11 @@ function StackNavigator() {
         options={{ headerShown: false }}
       />
       <Stack.Screen name="Register" component={Register} />
+      <Stack.Screen
+        name="Account"
+        component={Account}
+        options={{ title: "Thông tin tài khoản" }}
+      />
     </Stack.Navigator>
   );
 }
