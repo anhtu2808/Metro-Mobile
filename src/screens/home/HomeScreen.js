@@ -50,13 +50,21 @@ export default function HomeScreen() {
             </View>
 
             <View style={styles.iconBox}>
-              <MaterialIcons
-                name="confirmation-number"
-                size={30}
-                color="#000"
-              />
-              <Text style={styles.iconLabel}>Vé Của Tôi</Text>
+              <TouchableOpacity
+                style={styles.iconButton}
+                onPress={() => navigation.navigate("MyTicket")}
+              >
+                <View style={styles.iconContent}>
+                  <MaterialIcons
+                    name="confirmation-number"
+                    size={30}
+                    color="#000"
+                  />
+                  <Text style={styles.iconLabel}>Vé Của Tôi</Text>
+                </View>
+              </TouchableOpacity>
             </View>
+
             <View style={styles.iconBox}>
               <MaterialIcons name="sync" size={30} color="#000" />
               <Text style={styles.iconLabel}>Điều Chỉnh Giá Vé</Text>

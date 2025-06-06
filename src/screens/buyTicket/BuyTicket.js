@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import React from "react";
+import { useNavigation } from "@react-navigation/native";
 
 const ticketOptions = [
   { label: "Vé 1 ngày", price: "40.000 đ" },
@@ -32,6 +33,7 @@ const stations = [
 ];
 
 const BuyTicket = () => {
+  const navigation = useNavigation();
   return (
     <ScrollView style={styles.container}>
       {/* Welcome */}
