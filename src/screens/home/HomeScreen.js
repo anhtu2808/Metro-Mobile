@@ -38,9 +38,17 @@ export default function HomeScreen() {
           />
           <View style={styles.board}>
             <View style={styles.iconBox}>
-              <MaterialIcons name="local-atm" size={30} color="#000" />
-              <Text style={styles.iconLabel}>Mua Vé</Text>
+              <TouchableOpacity
+                style={styles.iconButton}
+                onPress={() => navigation.navigate("BuyTicket")}
+              >
+                <View style={styles.iconContent}>
+                  <MaterialIcons name="local-atm" size={30} color="#000" />
+                  <Text style={styles.iconLabel}>Mua Vé</Text>
+                </View>
+              </TouchableOpacity>
             </View>
+
             <View style={styles.iconBox}>
               <MaterialIcons
                 name="confirmation-number"

@@ -45,7 +45,7 @@ const InfoItem = ({ label, value, isDanger }) => (
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#e0f7fa",
+    backgroundColor: "#ebf7fa",
     alignItems: "center",
   },
   avatarContainer: {
