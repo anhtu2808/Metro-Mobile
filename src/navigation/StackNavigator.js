@@ -5,6 +5,7 @@ import Login from "../screens/login/Login";
 import Register from "../screens/register/Register";
 import Account from "../screens/account/Account";
 import BuyTicket from "../screens/buyTicket/BuyTicket";
+import MyTicket from "../screens/myTicket/MyTicket";
 
 const Stack = createNativeStackNavigator();
 
@@ -31,6 +32,11 @@ function StackNavigator() {
         name="BuyTicket"
         component={BuyTicket}
         options={{ headerShown: true, title: "Mua Vé" }}
+      />
+      <Stack.Screen
+        name="MyTicket"
+        component={MyTicket}
+        options={{ headerShown: false }}
       />
     </Stack.Navigator>
   );
