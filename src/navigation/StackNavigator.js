@@ -4,6 +4,7 @@ import HomeScreen from "../screens/home/HomeScreen";
 import Login from "../screens/login/Login";
 import Register from "../screens/register/Register";
 import Account from "../screens/account/Account";
+import BuyTicket from "../screens/buyTicket/BuyTicket";
 
 const Stack = createNativeStackNavigator();
 
@@ -25,6 +26,11 @@ function StackNavigator() {
         name="Account"
         component={Account}
         options={{ title: "Thông tin tài khoản" }}
+      />
+      <Stack.Screen
+        name="BuyTicket"
+        component={BuyTicket}
+        options={{ headerShown: true, title: "Mua Vé" }}
       />
     </Stack.Navigator>
   );
