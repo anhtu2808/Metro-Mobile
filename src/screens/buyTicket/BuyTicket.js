@@ -67,7 +67,7 @@ const BuyTicket = () => {
         {stations.map((station, idx) => (
           <View key={idx} style={styles.stationRow}>
             <Text style={styles.stationText}>Đi từ ga {station}</Text>
-            <TouchableOpacity onPress={() => navigation.navigate("MyTicket")}>
+            <TouchableOpacity>
               <Text style={styles.detailText}>Xem chi tiết</Text>
             </TouchableOpacity>
           </View>
