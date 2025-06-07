@@ -7,6 +7,7 @@ import {
 } from "react-native";
 import React from "react";
 import { useNavigation } from "@react-navigation/native";
+import Header from "../../components/header/Header";
 
 const ticketOptions = [
   { label: "Vé 1 ngày", price: "40.000 đ" },
@@ -36,6 +37,8 @@ const BuyTicket = () => {
   const navigation = useNavigation();
   return (
     <ScrollView style={styles.container}>
+      <Header name="Mua vé" />
+
       {/* Welcome */}
       <View style={styles.welcomeBox}>
         <Text style={styles.welcome}>Chào mừng, Nguyễn Sĩ Vạn Hào!</Text>
@@ -67,7 +70,9 @@ const BuyTicket = () => {
         {stations.map((station, idx) => (
           <View key={idx} style={styles.stationRow}>
             <Text style={styles.stationText}>Đi từ ga {station}</Text>
-            <TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => navigation.navigate("BuyTurnTicket")}
+            >
               <Text style={styles.detailText}>Xem chi tiết</Text>
             </TouchableOpacity>
           </View>

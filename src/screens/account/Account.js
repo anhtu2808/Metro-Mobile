@@ -7,10 +7,12 @@ import {
   ScrollView,
   TouchableOpacity,
 } from "react-native";
+import Header from "../../components/header/Header";
 
 const Account = () => {
   return (
     <View style={styles.container}>
+      <Header name="Thông tin cá nhân" />
       <View style={styles.avatarContainer}>
         <Image
           source={require("../../assets/metro.jpg")}

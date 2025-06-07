@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import React from "react";
 import ImageUploader from "../../components/image/ImageUploader";
+import Header from "../../components/header/Header";
 
 const Register = () => {
   return (
@@ -16,6 +17,7 @@ const Register = () => {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
     >
+      <Header name="Đăng ký" />
       <ScrollView showsVerticalScrollIndicator={false}>
         <TextInput style={styles.textInput} placeholder="Tên" />
         <TextInput style={styles.textInput} placeholder="Họ" />
