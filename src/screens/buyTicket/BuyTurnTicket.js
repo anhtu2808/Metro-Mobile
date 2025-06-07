@@ -10,6 +10,7 @@ import {
   Dimensions,
 } from "react-native";
 import Header from "../../components/header/Header";
+import { useNavigation } from "@react-navigation/native";
 
 const stations = [
   { name: "Đến Nhà hát Thành phố", price: "6.000 đ" },
@@ -26,6 +27,7 @@ const stations = [
 const BuyTurnTicket = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedStation, setSelectedStation] = useState(null);
+  const navigation = useNavigation();
 
   const openModal = (item) => {
     setSelectedStation(item);
@@ -91,7 +93,12 @@ const BuyTurnTicket = () => {
               <View style={styles.dashedLine} />
               <View style={styles.circleRight} />
             </View>
-            <TouchableOpacity style={styles.buyButton}>
+            <TouchableOpacity
+              style={styles.buyButton}
+              onPress={() =>
+                navigation.navigate("Invoice", { ticket: selectedStation })
+              }
+            >
               <Text style={styles.buyButtonText}>
                 Mua ngay: {selectedStation?.price}
               </Text>

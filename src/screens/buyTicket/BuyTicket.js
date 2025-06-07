@@ -5,9 +5,10 @@ import {
   ScrollView,
   TouchableOpacity,
 } from "react-native";
-import React from "react";
+import React, { useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import Header from "../../components/header/Header";
+import { Picker } from "@react-native-picker/picker";
 
 const ticketOptions = [
   { label: "Vé 1 ngày", price: "40.000 đ" },
@@ -35,6 +36,7 @@ const stations = [
 
 const BuyTicket = () => {
   const navigation = useNavigation();
+  const [selectedValue, setSelectedValue] = useState("");
   return (
     <ScrollView style={styles.container}>
       <Header name="Mua vé" />
@@ -46,6 +48,26 @@ const BuyTicket = () => {
           Bắt đầu các trải nghiệm mới cùng Metro nhé!
         </Text>
       </View>
+
+      <Text style={styles.label}>Chọn tuyến đường:</Text>
+      <View style={styles.pickerWrapper}>
+        <Picker
+          selectedValue={selectedValue}
+          onValueChange={(itemValue) => setSelectedValue(itemValue)}
+          style={styles.picker}
+        >
+          <Picker.Item
+            label="M1 Suối Tiên - Bến Thành"
+            value="Suối Tiên - Bến Thành"
+          />
+          <Picker.Item label="M2 Nhà Văn Hóa - FPT" value="Nhà Văn Hóa - FPT" />
+          <Picker.Item
+            label="M3 Bình Chánh - Vinhome"
+            value="Bình Chánh - Vinhome"
+          />
+        </Picker>
+      </View>
+      <Text style={styles.label}>Đã chọn: {selectedValue}</Text>
 
       {/* Nổi bật */}
       <Text style={styles.sectionTitle}>🔥 Nổi bật 🔥</Text>
@@ -149,6 +171,20 @@ const styles = StyleSheet.create({
     color: "#007aff",
     fontWeight: "500",
     fontSize: 14,
+  },
+  label: {
+    marginBottom: 8,
+    fontWeight: "bold",
+  },
+  pickerWrapper: {
+    borderRadius: 10,
+    overflow: "hidden",
+    marginBottom: 12,
+    backgroundColor: "white",
+  },
+  picker: {
+    height: 50,
+    width: "100%",
   },
 });
 

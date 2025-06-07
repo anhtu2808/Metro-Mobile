@@ -8,8 +8,10 @@ import {
   TouchableOpacity,
 } from "react-native";
 import Header from "../../components/header/Header";
+import { useNavigation } from "@react-navigation/native";
 
 const Account = () => {
+  const navigation = useNavigation();
   return (
     <View style={styles.container}>
       <Header name="Thông tin cá nhân" />
@@ -27,7 +29,11 @@ const Account = () => {
         <InfoItem label="Tên đăng nhập" value="Vạn Hào" />
         <InfoItem label="Mật khẩu" value="" />
         <InfoItem label="Số điện thoại" value="0900000000" />
-        <InfoItem label="Quản lý phương thức thanh toán" value="" />
+        <InfoItem
+          label="Quản lý phương thức thanh toán"
+          value=""
+          onPress={() => navigation.navigate("Transaction")}
+        />
         <InfoItem label="Xoá tài khoản" value="" isDanger />
         <InfoItem label="Đăng xuất" value="" isDanger />
       </ScrollView>
@@ -35,8 +41,8 @@ const Account = () => {
   );
 };
 
-const InfoItem = ({ label, value, isDanger }) => (
-  <TouchableOpacity style={styles.infoItem}>
+const InfoItem = ({ label, value, isDanger, onPress }) => (
+  <TouchableOpacity style={styles.infoItem} onPress={onPress}>
     <Text style={[styles.infoLabel, isDanger && { color: "#e53935" }]}>
       {label}
     </Text>
