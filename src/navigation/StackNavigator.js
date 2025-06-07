@@ -12,6 +12,7 @@ import HistoryTransaction from "../screens/historyTransaction/HistoryTransaction
 import TicketTabNavigator from "./TicketTabNavigator";
 import TransactionScreen from "../screens/transaction/TransactionScreen";
 import Invoice from "../screens/invoice/Invoice";
+import AdjustTicket from "../screens/adjustTicket/AdjustTicket";
 
 const Stack = createNativeStackNavigator();
 
@@ -61,6 +62,11 @@ function StackNavigator() {
       <Stack.Screen
         name="Invoice"
         component={Invoice}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="AdjustTicket"
+        component={AdjustTicket}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>
