@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import Header from "../../components/header/Header";
 import { useNavigation } from "@react-navigation/native";
+import TicketConfirmModal from "../../components/modal/TicketConfirmModal";
 
 const stations = [
   { name: "Đến Nhà hát Thành phố", price: "6.000 đ" },
@@ -62,50 +63,25 @@ const BuyTurnTicket = () => {
         showsVerticalScrollIndicator={false}
       />
 
-      {/* Modal hiển thị popup vé */}
-      <Modal
+      <TicketConfirmModal
         visible={modalVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={closeModal}
-      >
-        <Pressable style={styles.modalOverlay} onPress={closeModal}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>{selectedStation?.name}</Text>
-            <View style={styles.ticketInfo}>
-              <View style={styles.row}>
-                <Text style={styles.label}>Loại vé: </Text>
-                <Text style={styles.value}>{selectedStation?.name}</Text>
-              </View>
-              <View style={styles.row}>
-                <Text style={styles.label}>HSD: </Text>
-                <Text style={styles.value}>24h kể từ thời điểm kích hoạt</Text>
-              </View>
-              <View style={styles.row}>
-                <Text style={styles.labelRed}>Lưu ý: </Text>
-                <Text style={styles.valueRed}>
-                  Tự động kích hoạt sau 30 ngày kể từ ngày mua vé
-                </Text>
-              </View>
-            </View>
-            <View style={styles.dashedLineContainer}>
-              <View style={styles.circleLeft} />
-              <View style={styles.dashedLine} />
-              <View style={styles.circleRight} />
-            </View>
-            <TouchableOpacity
-              style={styles.buyButton}
-              onPress={() =>
-                navigation.navigate("Invoice", { ticket: selectedStation })
-              }
-            >
-              <Text style={styles.buyButtonText}>
-                Mua ngay: {selectedStation?.price}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </Pressable>
-      </Modal>
+        onClose={closeModal}
+        title={selectedStation?.name}
+        infoRows={[
+          { label: "Loại vé: ", value: selectedStation?.name },
+          { label: "HSD: ", value: "24h kể từ thời điểm kích hoạt" },
+          {
+            label: "Lưu ý: ",
+            value: "Tự động kích hoạt sau 30 ngày kể từ ngày mua vé",
+            isWarning: true,
+          },
+        ]}
+        price={selectedStation?.price}
+        onBuy={() => {
+          setModalVisible(false);
+          navigation.navigate("Invoice", { ticket: selectedStation });
+        }}
+      />
     </View>
   );
 };

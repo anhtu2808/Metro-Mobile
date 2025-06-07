@@ -69,9 +69,20 @@ export default function HomeScreen() {
               </TouchableOpacity>
             </View>
 
-            <View style={styles.iconBox}>
+            {/* <View style={styles.iconBox}>
               <MaterialIcons name="sync" size={30} color="#000" />
               <Text style={styles.iconLabel}>Điều Chỉnh Giá Vé</Text>
+            </View> */}
+            <View style={styles.iconBox}>
+              <TouchableOpacity
+                style={styles.iconButton}
+                onPress={() => navigation.navigate("AdjustTicket")}
+              >
+                <View style={styles.iconContent}>
+                  <MaterialIcons name="sync" size={30} color="#000" />
+                  <Text style={styles.iconLabel}>Điều Chỉnh Giá Vé</Text>
+                </View>
+              </TouchableOpacity>
             </View>
             <View style={styles.iconBox}>
               <MaterialIcons name="tram" size={30} color="#000" />
