@@ -7,6 +7,9 @@ import Account from "../screens/account/Account";
 import BuyTicket from "../screens/buyTicket/BuyTicket";
 import MyTicket from "../screens/myTicket/MyTicket";
 import BuyTurnTicket from "../screens/buyTicket/BuyTurnTicket";
+import Expired from "../screens/expired/Expired";
+import HistoryTransaction from "../screens/historyTransaction/HistoryTransaction";
+import TicketTabNavigator from "./TicketTabNavigator";
 
 const Stack = createNativeStackNavigator();
 
@@ -34,18 +37,18 @@ function StackNavigator() {
         options={{ headerShown: false, title: "Thông tin tài khoản" }}
       />
       <Stack.Screen
-        name="BuyTicket"
-        component={BuyTicket}
-        options={{ headerShown: false, title: "Mua Vé" }}
-      />
-      <Stack.Screen
-        name="MyTicket"
-        component={MyTicket}
+        name="BuyTurnTicket"
+        component={BuyTurnTicket}
         options={{ headerShown: false }}
       />
       <Stack.Screen
-        name="BuyTurnTicket"
-        component={BuyTurnTicket}
+        name="Expired"
+        component={Expired}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="TicketTabs"
+        component={TicketTabNavigator}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

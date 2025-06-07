@@ -40,7 +40,9 @@ export default function HomeScreen() {
             <View style={styles.iconBox}>
               <TouchableOpacity
                 style={styles.iconButton}
-                onPress={() => navigation.navigate("BuyTicket")}
+                onPress={() =>
+                  navigation.navigate("TicketTabs", { screen: "BuyTicket" })
+                }
               >
                 <View style={styles.iconContent}>
                   <MaterialIcons name="local-atm" size={30} color="#000" />
@@ -52,7 +54,9 @@ export default function HomeScreen() {
             <View style={styles.iconBox}>
               <TouchableOpacity
                 style={styles.iconButton}
-                onPress={() => navigation.navigate("MyTicket")}
+                onPress={() =>
+                  navigation.navigate("TicketTabs", { screen: "MyTicket" })
+                }
               >
                 <View style={styles.iconContent}>
                   <MaterialIcons
@@ -111,6 +115,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   contentContainer: {
     paddingBottom: 100,
+    backgroundColor: "#ebf7fa",
   },
   image: {
     width: "100%",
