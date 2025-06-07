@@ -15,7 +15,7 @@ const MyTicket = () => {
           <Text style={styles.icon}>🏠</Text>
         </TouchableOpacity>
         <Text style={styles.title}>Vé của tôi</Text>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate("Expired")}>
           <Text style={styles.expired}>Hết hạn</Text>
         </TouchableOpacity>
       </View>
@@ -61,7 +61,7 @@ const MyTicket = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f6faff",
+    backgroundColor: "#ebf7fa",
   },
   header: {
     flexDirection: "row",
