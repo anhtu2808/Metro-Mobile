@@ -4,15 +4,14 @@ import HomeScreen from "../screens/home/HomeScreen";
 import Login from "../screens/login/Login";
 import Register from "../screens/register/Register";
 import Account from "../screens/account/Account";
-import BuyTicket from "../screens/buyTicket/BuyTicket";
-import MyTicket from "../screens/myTicket/MyTicket";
 import BuyTurnTicket from "../screens/buyTicket/BuyTurnTicket";
 import Expired from "../screens/expired/Expired";
-import HistoryTransaction from "../screens/historyTransaction/HistoryTransaction";
 import TicketTabNavigator from "./TicketTabNavigator";
 import TransactionScreen from "../screens/transaction/TransactionScreen";
 import Invoice from "../screens/invoice/Invoice";
 import AdjustTicket from "../screens/adjustTicket/AdjustTicket";
+import News from "../screens/news/News";
+import NewsDetail from "../screens/news/NewsDetail";
 
 const Stack = createNativeStackNavigator();
 
@@ -67,6 +66,16 @@ function StackNavigator() {
       <Stack.Screen
         name="AdjustTicket"
         component={AdjustTicket}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="News"
+        component={News}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="NewsDetail"
+        component={NewsDetail}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>
