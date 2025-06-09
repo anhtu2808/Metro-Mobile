@@ -1,15 +1,9 @@
 import React, { useState } from "react";
-import {
-  Button,
-  Image,
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-} from "react-native";
+import { Button, Image, StyleSheet, View, Text } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 
-export default function ImageUploader() {
+export default function ImageUploader({ setAvatarUrl }) {
+  // Thêm setAvatarUrl để truyền uri lên Register
   const [image, setImage] = useState(null);
 
   const pickImage = async () => {
@@ -29,6 +23,7 @@ export default function ImageUploader() {
 
     if (!result.canceled) {
       setImage(result.assets[0].uri);
+      setAvatarUrl && setAvatarUrl(result.assets[0].uri); // truyền uri lên Register
     }
   };
 
@@ -39,12 +34,6 @@ export default function ImageUploader() {
       </Text>
       <Button title="Chọn ảnh từ thư viện" onPress={pickImage} />
       {image && <Image source={{ uri: image }} style={styles.image} />}
-      <TouchableOpacity
-        onPress={() => console.log("Gửi form")}
-        style={styles.button}
-      >
-        <Text style={styles.buttonText}>Đăng ký</Text>
-      </TouchableOpacity>
     </View>
   );
 }

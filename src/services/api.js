@@ -80,8 +80,7 @@ api.interceptors.response.use(
         await AsyncStorage.clear();
 
         // ⚠️ Optional: điều hướng về Login screen nếu có navigation
-        // navigationRef.current?.navigate('Login');
-
+        navigationRef.current?.navigate("Login");
         return Promise.reject(err);
       } finally {
         isRefreshing = false;
