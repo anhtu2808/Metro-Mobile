@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Alert,
   TouchableOpacity,
@@ -10,12 +10,36 @@ import {
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import { readLoginAPI } from "../../apis";
 
 function Login() {
-  const [number, onChangeNumber] = React.useState("");
-  const [text, onChangeText] = React.useState("");
-  const [showPassword, setShowPassword] = React.useState(false); // Add this line
+  const [password, setPasword] = useState("");
+  const [username, setUsername] = useState("");
+  const [showPassword, setShowPassword] = useState(false); // Add this line
   const navigation = useNavigation();
+
+  const handleLogin = () => {
+    if (username === "" || password === "") {
+      Alert.alert("Thông báo", "Vui lòng nhập tên đăng nhập và mật khẩu.");
+      return;
+    }
+
+    const data = {
+      username: username,
+      password: password,
+    };
+
+    // Handle login logic here
+    readLoginAPI(data)
+      .then((response) => {
+        navigation.navigate("Home");
+        Alert.alert("Đăng nhập thành công", `Chào mừng ${username}!`);
+      })
+      .catch((error) => {
+        Alert.alert("Lỗi đăng nhập", "Tên đăng nhập hoặc mật khẩu không đúng.");
+      });
+  };
+
   return (
     <View style={styles.container}>
       <Image source={require("../../assets/metro.jpg")} style={styles.image} />
@@ -25,8 +49,8 @@ function Login() {
           style={styles.textInput}
           placeholder="Tên Đăng Nhập"
           placeholderTextColor="#999"
-          value={text}
-          onChangeText={onChangeText}
+          value={username}
+          onChangeText={setUsername}
         />
         <View style={styles.passwordContainer}>
           <TextInput
@@ -35,8 +59,8 @@ function Login() {
             secureTextEntry={!showPassword}
             autoCapitalize="none"
             placeholderTextColor="#999"
-            value={number}
-            onChangeText={onChangeNumber}
+            value={password}
+            onChangeText={setPasword}
           />
           <TouchableOpacity
             style={styles.eyeButton}
@@ -49,17 +73,11 @@ function Login() {
             />
           </TouchableOpacity>
         </View>
-        <TouchableOpacity
-          style={styles.loginButton}
-          onPress={() => Alert.alert("Login pressed")}
-        >
+        <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
           <Text style={styles.loginButtonText}>Đăng Nhập</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.loginGoogleButton}
-          onPress={() => navigation.navigate("Account")}
-        >
+        <TouchableOpacity style={styles.loginGoogleButton}>
           <Text style={styles.loginGoogleButtonText}>Đăng Nhập Google</Text>
         </TouchableOpacity>
 
