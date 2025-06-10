@@ -26,15 +26,7 @@ const Register = () => {
   const navigation = useNavigation();
 
   const handleRegister = () => {
-    if (
-      !firstName ||
-      !lastName ||
-      !username ||
-      !password ||
-      !address ||
-      !phone ||
-      !email
-    ) {
+    if (!firstName || !lastName || !username || !password || !phone || !email) {
       Alert.alert("Thông báo", "Vui lòng điền đầy đủ thông tin.");
       return;
     }

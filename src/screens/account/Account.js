@@ -1,4 +1,4 @@
-import React from "react";
+import React, { use, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,33 +9,55 @@ import {
 } from "react-native";
 import Header from "../../components/header/Header";
 import { useNavigation } from "@react-navigation/native";
+import { useDispatch, useSelector } from "react-redux";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { logout } from "../../store/userSlice";
 
 const Account = () => {
   const navigation = useNavigation();
+  const dispatch = useDispatch();
+  const { user, isAuthenticated } = useSelector((state) => state.user);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigation.navigate("Login");
+    }
+  }, [isAuthenticated]);
+
+  const handleLogout = async () => {
+    await AsyncStorage.removeItem("accessToken");
+    dispatch(logout());
+    navigation.navigate("Login");
+  };
+
+  if (!user) return null; // hoặc hiển thị loading
+
   return (
     <View style={styles.container}>
       <Header name="Thông tin cá nhân" />
       <View style={styles.avatarContainer}>
         <Image
-          source={require("../../assets/metro.jpg")}
+          source={
+            user.avatarUrl
+              ? { uri: user.avatarUrl }
+              : require("../../assets/metro.jpg")
+          }
           style={styles.avatar}
         />
       </View>
-      <Text style={styles.name}>Nguyen Si Van Hao (K17 HCM)</Text>
+      <Text style={styles.name}>{user.username}</Text>
       <ScrollView style={styles.infoContainer}>
-        <InfoItem label="Tên" value="Hao (K17 HCM)" />
-        <InfoItem label="Họ" value="Nguyen Si Van" />
-        <InfoItem label="Email" value="haonsvse172181@fpt.edu.vn" />
-        <InfoItem label="Tên đăng nhập" value="Vạn Hào" />
-        <InfoItem label="Mật khẩu" value="" />
-        <InfoItem label="Số điện thoại" value="0900000000" />
+        <InfoItem value={"Tên: " + user.firstName} />
+        <InfoItem value={"Họ: " + user.lastName} />
+        <InfoItem value={"Email: " + user.email} />
+        <InfoItem value={"Tên đăng nhập: " + user.username} />
+        <InfoItem value={"Địa chỉ: " + user.address} />
+        <InfoItem value={"Số điện thoại: " + user.phone} />
         <InfoItem
           label="Quản lý phương thức thanh toán"
-          value=""
           onPress={() => navigation.navigate("Transaction")}
         />
-        <InfoItem label="Xoá tài khoản" value="" isDanger />
-        <InfoItem label="Đăng xuất" value="" isDanger />
+        <InfoItem label="Đăng xuất" value="" isDanger onPress={handleLogout} />
       </ScrollView>
     </View>
   );
@@ -46,7 +68,11 @@ const InfoItem = ({ label, value, isDanger, onPress }) => (
     <Text style={[styles.infoLabel, isDanger && { color: "#e53935" }]}>
       {label}
     </Text>
-    {value ? <Text style={styles.infoValue}>{value}</Text> : null}
+    {value ? (
+      <Text style={styles.infoValue}>{value}</Text>
+    ) : (
+      "Thông tin chưa được cung cấp"
+    )}
   </TouchableOpacity>
 );
 
@@ -115,7 +141,8 @@ const styles = StyleSheet.create({
   infoValue: {
     fontSize: 15,
     color: "#555",
-    marginLeft: 10,
+    textAlign: "left",
+    flex: 1,
   },
 });
 

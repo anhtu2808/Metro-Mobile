@@ -10,6 +10,7 @@ import {
 import { MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { Video } from "expo-av";
+import { useSelector } from "react-redux";
 
 const newsList = [
   {
@@ -71,6 +72,7 @@ export default function HomeScreen() {
       text: "Hướng dẫn sử dụng",
     },
   ];
+  const { user, isAuthenticated } = useSelector((state) => state.user);
   return (
     <FlatList
       ListHeaderComponent={
@@ -139,7 +141,13 @@ export default function HomeScreen() {
             <View style={styles.iconBox}>
               <TouchableOpacity
                 style={styles.iconButton}
-                onPress={() => navigation.navigate("Login")}
+                onPress={() => {
+                  if (isAuthenticated) {
+                    navigation.navigate("Account");
+                  } else {
+                    navigation.navigate("Login");
+                  }
+                }}
               >
                 <View style={styles.iconContent}>
                   <MaterialIcons name="person" size={30} color="#000" />

@@ -10,13 +10,17 @@ import {
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import { readLoginAPI } from "../../apis";
+import { readInfoAPI, readLoginAPI } from "../../apis";
+import { useDispatch } from "react-redux";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { loginSuccess } from "../../store/userSlice";
 
 function Login() {
   const [password, setPasword] = useState("");
   const [username, setUsername] = useState("");
   const [showPassword, setShowPassword] = useState(false); // Add this line
   const navigation = useNavigation();
+  const dispatch = useDispatch();
 
   const handleLogin = () => {
     if (username === "" || password === "") {
@@ -29,13 +33,26 @@ function Login() {
       password: password,
     };
 
+    console.log("Login dataaaaaaaaaaaaaaaaaaaaaaaa:", data);
     // Handle login logic here
     readLoginAPI(data)
-      .then((response) => {
+      .then(async (response) => {
+        // Lưu token vào AsyncStorage nếu cần
+        await AsyncStorage.setItem("accessToken", response.result.token);
+        // Gọi tiếp API lấy thông tin user
+        const userInfo = await readInfoAPI();
+        // Lưu user vào Redux
+        dispatch(
+          loginSuccess({
+            user: userInfo.result, // tuỳ theo response API trả về
+            accessToken: response.result.token,
+          })
+        );
         navigation.navigate("Home");
         Alert.alert("Đăng nhập thành công", `Chào mừng ${username}!`);
       })
       .catch((error) => {
+        console.log("Login error:", error?.response?.data || error);
         Alert.alert("Lỗi đăng nhập", "Tên đăng nhập hoặc mật khẩu không đúng.");
       });
   };
