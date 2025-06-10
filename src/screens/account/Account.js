@@ -68,7 +68,11 @@ const InfoItem = ({ label, value, isDanger, onPress }) => (
     <Text style={[styles.infoLabel, isDanger && { color: "#e53935" }]}>
       {label}
     </Text>
-    {value ? <Text style={styles.infoValue}>{value}</Text> : null}
+    {value ? (
+      <Text style={styles.infoValue}>{value}</Text>
+    ) : (
+      "Thông tin chưa được cung cấp"
+    )}
   </TouchableOpacity>
 );
 
