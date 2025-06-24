@@ -5,10 +5,11 @@ import {
   ScrollView,
   TouchableOpacity,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import Header from "../../components/header/Header";
 import { Picker } from "@react-native-picker/picker";
+import { readLinesAPI, readStationsAPI } from "../../apis";
 
 const ticketOptions = [
   { label: "Vé 1 ngày", price: "40.000 đ" },
@@ -18,25 +19,59 @@ const ticketOptions = [
 
 const studentTicket = { label: "Vé tháng HSSV", price: "150.000 đ" };
 
-const stations = [
-  "Nhà hát Thành phố",
-  "Ba Son",
-  "Văn Thánh",
-  "Tân Cảng",
-  "Thảo Điền",
-  "An Phú",
-  "Rạch Chiếc",
-  "Phước Long",
-  "Bình Thái",
-  "Thủ Đức",
-  "Khu Công nghệ cao",
-  "Đại học Quốc gia",
-  // Thêm các ga khác nếu có
-];
+// const stations = [
+//   "Nhà hát Thành phố",
+//   "Ba Son",
+//   "Văn Thánh",
+//   "Tân Cảng",
+//   "Thảo Điền",
+//   "An Phú",
+//   "Rạch Chiếc",
+//   "Phước Long",
+//   "Bình Thái",
+//   "Thủ Đức",
+//   "Khu Công nghệ cao",
+//   "Đại học Quốc gia",
+//   // Thêm các ga khác nếu có
+// ];
 
 const BuyTicket = () => {
   const navigation = useNavigation();
   const [selectedValue, setSelectedValue] = useState("");
+  const [lines, setLines] = useState([]);
+  const [stations, setStations] = useState([]);
+
+  const fetchLines = async () => {
+    try {
+      const response = await readLinesAPI();
+      if (!response || !response.result.data) {
+        console.error("No data received from API");
+        return;
+      }
+      setLines(response.result.data);
+    } catch (error) {
+      console.error("Error fetching lines:", error);
+    }
+  };
+
+  const fetchStations = async () => {
+    try {
+      const response = await readStationsAPI();
+      console.log("API station response:", response); // Thêm dòng này
+      if (!response || !response.result.data) {
+        console.error("No data received from API");
+        return;
+      }
+      setStations(response.result.data);
+    } catch (error) {
+      console.error("Error fetching stations:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchLines();
+    fetchStations();
+  }, []);
   return (
     <ScrollView style={styles.container}>
       <Header name="Mua vé" />
@@ -52,19 +87,13 @@ const BuyTicket = () => {
       <Text style={styles.label}>Chọn tuyến đường:</Text>
       <View style={styles.pickerWrapper}>
         <Picker
-          selectedValue={selectedValue}
+          selectedValue={selectedValue} // data chọn ra line
           onValueChange={(itemValue) => setSelectedValue(itemValue)}
           style={styles.picker}
         >
-          <Picker.Item
-            label="M1 Suối Tiên - Bến Thành"
-            value="Suối Tiên - Bến Thành"
-          />
-          <Picker.Item label="M2 Nhà Văn Hóa - FPT" value="Nhà Văn Hóa - FPT" />
-          <Picker.Item
-            label="M3 Bình Chánh - Vinhome"
-            value="Bình Chánh - Vinhome"
-          />
+          {lines.map((line) => (
+            <Picker.Item key={line.id} label={line.name} value={line.name} />
+          ))}
         </Picker>
       </View>
       <Text style={styles.label}>Đã chọn: {selectedValue}</Text>
@@ -89,9 +118,9 @@ const BuyTicket = () => {
 
       {/* Danh sách ga */}
       <View style={{ marginTop: 24, marginBottom: 50 }}>
-        {stations.map((station, idx) => (
-          <View key={idx} style={styles.stationRow}>
-            <Text style={styles.stationText}>Đi từ ga {station}</Text>
+        {stations.map((station) => (
+          <View key={station.id} style={styles.stationRow}>
+            <Text style={styles.stationText}>Đi từ ga {station.name}</Text>
             <TouchableOpacity
               onPress={() => navigation.navigate("BuyTurnTicket")}
             >

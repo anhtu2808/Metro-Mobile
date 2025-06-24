@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import { readInfoAPI, readLoginAPI } from "../../apis";
+import { readInfoAPI, fectchLoginAPI } from "../../apis";
 import { useDispatch } from "react-redux";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { loginSuccess } from "../../store/userSlice";
@@ -35,7 +35,7 @@ function Login() {
 
     console.log("Login dataaaaaaaaaaaaaaaaaaaaaaaa:", data);
     // Handle login logic here
-    readLoginAPI(data)
+    fectchLoginAPI(data)
       .then(async (response) => {
         // Lưu token vào AsyncStorage nếu cần
         await AsyncStorage.setItem("accessToken", response.result.token);

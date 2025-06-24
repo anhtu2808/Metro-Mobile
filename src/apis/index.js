@@ -4,12 +4,12 @@ import { API_ROOT } from "../utils/constants.js";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 //Login & Logout API
-export const readLoginAPI = async (data) => {
+export const fectchLoginAPI = async (data) => {
   const res = await api.post("/v1/auth/login", data);
   return res.data;
 };
 
-export const readLogoutAPI = async () => {
+export const fetchLogoutAPI = async () => {
   const res = await api.post("/v1/auth/logout", {
     token: AsyncStorage.getItem("accessToken"),
   });
@@ -17,7 +17,7 @@ export const readLogoutAPI = async () => {
 };
 
 //Register API
-export const readRegisterAPI = async (data) => {
+export const createRegisterAPI = async (data) => {
   const res = await api.post("/v1/users/register", data);
   return res.data;
 };
@@ -25,5 +25,17 @@ export const readRegisterAPI = async (data) => {
 //User API
 export const readInfoAPI = async () => {
   const res = await api.get("/v1/users/my-info");
+  return res.data;
+};
+
+//Line API
+export const readLinesAPI = async () => {
+  const res = await api.get("/v1/lines?page=1&size=10&sort=id");
+  return res.data;
+};
+
+//Station API
+export const readStationsAPI = async () => {
+  const res = await api.get("/v1/stations?page=1&size=10&sort=id");
   return res.data;
 };
