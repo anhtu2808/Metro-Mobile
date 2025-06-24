@@ -56,8 +56,9 @@ const Account = () => {
         <InfoItem
           label="Quản lý phương thức thanh toán"
           onPress={() => navigation.navigate("Transaction")}
+          value={" "}
         />
-        <InfoItem label="Đăng xuất" value="" isDanger onPress={handleLogout} />
+        <InfoItem label="Đăng xuất" value=" " isDanger onPress={handleLogout} />
       </ScrollView>
     </View>
   );
@@ -71,7 +72,7 @@ const InfoItem = ({ label, value, isDanger, onPress }) => (
     {value ? (
       <Text style={styles.infoValue}>{value}</Text>
     ) : (
-      "Thông tin chưa được cung cấp"
+      <Text>Thông tin chưa được cung cấp</Text>
     )}
   </TouchableOpacity>
 );

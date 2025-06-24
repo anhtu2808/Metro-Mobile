@@ -11,7 +11,7 @@ import {
 import React, { useState } from "react";
 import ImageUploader from "../../components/image/ImageUploader";
 import Header from "../../components/header/Header";
-import { readRegisterAPI } from "../../apis";
+import { createRegisterAPI } from "../../apis";
 import { useNavigation } from "@react-navigation/native";
 
 const Register = () => {
@@ -41,7 +41,7 @@ const Register = () => {
       email,
       avatarUrl: avatarUrl || "", // Nếu không có avatarUrl thì để trống
     };
-    readRegisterAPI(data)
+    createRegisterAPI(data)
       .then((response) => {
         navigation.navigate("Login");
         Alert.alert("Đăng ký thành công", "Bạn đã đăng ký thành công!");
