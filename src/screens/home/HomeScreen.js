@@ -130,9 +130,17 @@ export default function HomeScreen() {
             </View>
 
             <View style={styles.iconBox}>
-              <MaterialIcons name="tram" size={30} color="#000" />
-              <Text style={styles.iconLabel}>Hành Trình</Text>
+              <TouchableOpacity
+                style={styles.iconButton}
+                onPress={() => navigation.navigate("Route")}
+              >
+                <View style={styles.iconContent}>
+                  <MaterialIcons name="tram" size={30} color="#000" />
+                  <Text style={styles.iconLabel}>Hành Trình</Text>
+                </View>
+              </TouchableOpacity>
             </View>
+
             <View style={styles.iconBox}>
               <MaterialIcons name="chat" size={30} color="#000" />
               <Text style={styles.iconLabel}>Nhận xét</Text>

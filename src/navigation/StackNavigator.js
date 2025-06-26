@@ -12,6 +12,7 @@ import Invoice from "../screens/invoice/Invoice";
 import AdjustTicket from "../screens/adjustTicket/AdjustTicket";
 import News from "../screens/news/News";
 import NewsDetail from "../screens/news/NewsDetail";
+import MetroMapScreen from "../screens/route/Route";
 
 const Stack = createNativeStackNavigator();
 
@@ -76,6 +77,11 @@ function StackNavigator() {
       <Stack.Screen
         name="NewsDetail"
         component={NewsDetail}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Route"
+        component={MetroMapScreen}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

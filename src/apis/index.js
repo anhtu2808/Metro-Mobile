@@ -34,8 +34,21 @@ export const readLinesAPI = async () => {
   return res.data;
 };
 
+export const readStartStationsByLineIdAPI = async (lineId) => {
+  const res = await api.get(`/v1/lines/${lineId}/start-stations`);
+  return res.data;
+};
+
 //Station API
 export const readStationsAPI = async () => {
-  const res = await api.get("/v1/stations?page=1&size=10&sort=id");
+  const res = await api.get(`/v1/stations?page=1&size=10&sort=id`);
+  return res.data;
+};
+
+//Bus API
+export const readBusByStationAPI = async (stationId) => {
+  const res = await api.get(
+    `/v1/bus-routes/${stationId}/station?page=1&size=10&sort=id`
+  );
   return res.data;
 };
