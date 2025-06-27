@@ -9,7 +9,11 @@ import React, { useEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import Header from "../../components/header/Header";
 import { Picker } from "@react-native-picker/picker";
-import { readLinesAPI, readStationsAPI } from "../../apis";
+import {
+  readLinesAPI,
+  readStartStationsByLineIdAPI,
+  readStationsAPI,
+} from "../../apis";
 
 const ticketOptions = [
   { label: "Vé 1 ngày", price: "40.000 đ" },
@@ -19,27 +23,13 @@ const ticketOptions = [
 
 const studentTicket = { label: "Vé tháng HSSV", price: "150.000 đ" };
 
-// const stations = [
-//   "Nhà hát Thành phố",
-//   "Ba Son",
-//   "Văn Thánh",
-//   "Tân Cảng",
-//   "Thảo Điền",
-//   "An Phú",
-//   "Rạch Chiếc",
-//   "Phước Long",
-//   "Bình Thái",
-//   "Thủ Đức",
-//   "Khu Công nghệ cao",
-//   "Đại học Quốc gia",
-//   // Thêm các ga khác nếu có
-// ];
-
 const BuyTicket = () => {
   const navigation = useNavigation();
-  const [selectedValue, setSelectedValue] = useState("");
   const [lines, setLines] = useState([]);
   const [stations, setStations] = useState([]);
+  const [selectedLineId, setSelectedLineId] = useState(""); // khai báo để lấy được lineId để mà truyền xuống lấy station.
+  const selectedLine = lines.find((line) => line.id === selectedLineId);
+  const sortedStations = [...stations].sort((a, b) => b.id - a.id); // sắp xếp lại id vì BE đặt id sai thứ tự
 
   const fetchLines = async () => {
     try {
@@ -54,15 +44,15 @@ const BuyTicket = () => {
     }
   };
 
-  const fetchStations = async () => {
+  const fetchStations = async (lineId) => {
     try {
-      const response = await readStationsAPI();
-      console.log("API station response:", response); // Thêm dòng này
-      if (!response || !response.result.data) {
+      const response = await readStartStationsByLineIdAPI(lineId);
+      console.log("API station response:", response.result); // Thêm dòng này
+      if (!response || !response.result) {
         console.error("No data received from API");
         return;
       }
-      setStations(response.result.data);
+      setStations(response.result);
     } catch (error) {
       console.error("Error fetching stations:", error);
     }
@@ -70,8 +60,23 @@ const BuyTicket = () => {
 
   useEffect(() => {
     fetchLines();
-    fetchStations();
   }, []);
+
+  useEffect(() => {
+    // Khi lines có dữ liệu, set selectedLineId và fetch stations
+    if (lines.length > 0) {
+      setSelectedLineId(lines[0].id);
+    }
+  }, [lines]);
+
+  useEffect(() => {
+    if (selectedLineId) {
+      fetchStations(selectedLineId);
+    }
+  }, [selectedLineId]);
+
+  console.log("linessssssssssssssssssssssssss:", selectedLine);
+  console.log("stationsssssssssssssssssssssss:", stations);
   return (
     <ScrollView style={styles.container}>
       <Header name="Mua vé" />
@@ -87,16 +92,18 @@ const BuyTicket = () => {
       <Text style={styles.label}>Chọn tuyến đường:</Text>
       <View style={styles.pickerWrapper}>
         <Picker
-          selectedValue={selectedValue} // data chọn ra line
-          onValueChange={(itemValue) => setSelectedValue(itemValue)}
+          selectedValue={selectedLineId}
+          onValueChange={(itemValue) => setSelectedLineId(itemValue)}
           style={styles.picker}
         >
           {lines.map((line) => (
-            <Picker.Item key={line.id} label={line.name} value={line.name} />
+            <Picker.Item key={line.id} label={line.name} value={line.id} />
           ))}
         </Picker>
       </View>
-      <Text style={styles.label}>Đã chọn: {selectedValue}</Text>
+      <Text style={styles.label}>
+        Đã chọn: {selectedLine ? selectedLine.name : "Chưa chọn"}
+      </Text>
 
       {/* Nổi bật */}
       <Text style={styles.sectionTitle}>🔥 Nổi bật 🔥</Text>
@@ -118,7 +125,7 @@ const BuyTicket = () => {
 
       {/* Danh sách ga */}
       <View style={{ marginTop: 24, marginBottom: 50 }}>
-        {stations.map((station) => (
+        {sortedStations.map((station) => (
           <View key={station.id} style={styles.stationRow}>
             <Text style={styles.stationText}>Đi từ ga {station.name}</Text>
             <TouchableOpacity
