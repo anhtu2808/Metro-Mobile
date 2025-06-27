@@ -23,7 +23,7 @@ export default function MetroMapScreen() {
   const navigation = useNavigation();
   const [stations, setStations] = useState([]);
   const [lines, setLines] = useState([]);
-  const [selectedLineId, setSelectedLineId] = useState(null);
+  const [selectedLineId, setSelectedLineId] = useState(null); // phải khai báo để lấy dc lineId
   const selectedLine = lines.find((line) => line.id === selectedLineId);
   const [mapRegion, setMapRegion] = useState(null);
   const [buses, setBuses] = useState([]);
@@ -79,7 +79,7 @@ export default function MetroMapScreen() {
   }, [lines]);
 
   useEffect(() => {
-    // Khi selectedLineId thay đổi, fetch stations và set mapRegion
+    // Kiểm tra nếu có lineId r thì truyền tham số zô để lấy station
     if (selectedLineId) {
       fetchStationsByLineId(selectedLineId);
     }
@@ -193,8 +193,8 @@ const styles = StyleSheet.create({
   pickerContainer: {
     position: "absolute",
     top: 40,
-    left: 16,
-    right: 16,
+    left: 70,
+    right: 70,
     zIndex: 10,
     backgroundColor: "#fff",
     borderRadius: 12,
