@@ -15,23 +15,22 @@ import Header from "../../components/header/Header";
 
 const { width } = Dimensions.get("window");
 
-const Invoice = () => {
-  const route = useRoute();
+const Invoice = ({ route }) => {
   const navigation = useNavigation();
-  const { ticket } = route.params || {};
+  const { productName, price, quantity } = route.params;
   const [paymentModal, setPaymentModal] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState(null);
 
   // Thông tin mẫu
-  const ticketInfo = {
-    name: ticket?.name || "Vé lượt: Bến Thành – Nhà Hát Thành Phố",
-    price: ticket?.price || "6.000đ",
-    type: "Vé lượt",
-    hsd: "30 ngày kể từ ngày mua",
-    note: "Vé sử dụng một lần",
-    desc: ticket?.name || "Vé lượt: Bến Thành – Nhà Hát Thành Phố",
-    quantity: 1,
-  };
+  // const ticketInfo = {
+  //   name: ticket?.name || "Vé lượt: Bến Thành – Nhà Hát Thành Phố",
+  //   price: ticket?.price || "6.000đ",
+  //   type: "Vé lượt",
+  //   hsd: "30 ngày kể từ ngày mua",
+  //   note: "Vé sử dụng một lần",
+  //   desc: ticket?.name || "Vé lượt: Bến Thành – Nhà Hát Thành Phố",
+  //   quantity: 1,
+  // };
 
   return (
     <View style={styles.container}>
@@ -65,53 +64,53 @@ const Invoice = () => {
         <View style={styles.infoBox}>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Sản phẩm:</Text>
-            <Text style={styles.infoValue}>{ticketInfo.name}</Text>
+            <Text style={styles.infoValue}>Vé lượt: {productName}</Text>
           </View>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Đơn giá:</Text>
-            <Text style={styles.infoValue}>{ticketInfo.price}</Text>
+            <Text style={styles.infoValue}>{price}</Text>
           </View>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Số lượng:</Text>
-            <Text style={styles.infoValue}>{ticketInfo.quantity}</Text>
+            <Text style={styles.infoValue}>{quantity}</Text>
           </View>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Thành tiền:</Text>
-            <Text style={styles.infoValue}>{ticketInfo.price}</Text>
+            <Text style={styles.infoValue}>{price}</Text>
           </View>
           <View style={styles.divider} />
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Tổng giá tiền:</Text>
-            <Text style={styles.infoValue}>{ticketInfo.price}</Text>
+            <Text style={styles.infoValue}>{price}</Text>
           </View>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Thành tiền:</Text>
-            <Text style={styles.infoValue}>{ticketInfo.price}</Text>
+            <Text style={styles.infoValue}>{price}</Text>
           </View>
         </View>
 
         {/* Thông tin vé */}
         <Text style={styles.sectionTitle}>
-          Thông tin Vé lượt: Bến Thành – Nhà Hát Thành Phố
+          Thông tin Vé lượt: {productName}
         </Text>
         <View style={styles.infoBox}>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Loại vé:</Text>
-            <Text style={styles.infoValue}>{ticketInfo.type}</Text>
+            <Text style={styles.infoValue}>Vé lượt</Text>
           </View>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>HSD:</Text>
-            <Text style={styles.infoValue}>{ticketInfo.hsd}</Text>
+            <Text style={styles.infoValue}>30 ngày kể từ ngày mua</Text>
           </View>
           <View style={styles.infoRow}>
             <Text style={[styles.infoLabel, { color: "#E53935" }]}>Lưu ý:</Text>
             <Text style={[styles.infoValue, { color: "#E53935" }]}>
-              {ticketInfo.note}
+              Vé sử dụng một lần
             </Text>
           </View>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Mô tả:</Text>
-            <Text style={styles.infoValue}>{ticketInfo.desc}</Text>
+            <Text style={styles.infoValue}>Vé lượt: {productName}</Text>
           </View>
         </View>
       </ScrollView>
@@ -127,7 +126,7 @@ const Invoice = () => {
           // Xử lý thanh toán với VNPay
         }}
       >
-        <Text style={styles.payButtonText}>Thanh toán: {ticketInfo.price}</Text>
+        <Text style={styles.payButtonText}>Thanh toán: {price}</Text>
       </TouchableOpacity>
 
       {/* Modal chọn phương thức thanh toán */}
