@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -12,23 +12,37 @@ import {
 import Header from "../../components/header/Header";
 import { useNavigation } from "@react-navigation/native";
 import TicketConfirmModal from "../../components/modal/TicketConfirmModal";
+import { readEndStationByLineIdStationIdAPI } from "../../apis";
+import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 
-const stations = [
-  { name: "Đến Nhà hát Thành phố", price: "6.000 đ" },
-  { name: "Đến Ba Son", price: "6.000 đ" },
-  { name: "Đến Văn Thánh", price: "6.000 đ" },
-  { name: "Đến Tân Cảng", price: "6.000 đ" },
-  { name: "Đến Thảo Điền", price: "6.000 đ" },
-  { name: "Đến An Phú", price: "6.000 đ" },
-  { name: "Đến Rạch Chiếc", price: "8.000 đ" },
-  { name: "Đến Phước Long", price: "8.000 đ" },
-  { name: "Đến Bình Thái", price: "8.000 đ" },
-];
-
-const BuyTurnTicket = () => {
+const BuyTurnTicket = ({ route }) => {
+  const { lineId, stationId, stationName } = route.params;
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedStation, setSelectedStation] = useState(null);
   const navigation = useNavigation();
+  const [endStations, setEndStations] = useState([]);
+
+  const fetchEndStations = async (lineId, StationId) => {
+    try {
+      const response = await readEndStationByLineIdStationIdAPI(
+        lineId,
+        StationId
+      );
+      if (!response || !response.result) {
+        console.log("No data recieved from API");
+        return;
+      }
+      setEndStations(response.result);
+    } catch (error) {
+      console.error("Error fetching endStaions:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (lineId && stationId) {
+      fetchEndStations(lineId, stationId);
+    }
+  }, [lineId, stationId]);
 
   const openModal = (item) => {
     setSelectedStation(item);
@@ -43,9 +57,15 @@ const BuyTurnTicket = () => {
   const renderItem = ({ item }) => (
     <TouchableOpacity onPress={() => openModal(item)}>
       <View style={styles.ticketCard}>
+        <FontAwesome5
+          name="ticket-alt"
+          size={30}
+          color="#007aff"
+          style={{ marginRight: 30 }}
+        />
         <View style={{ flex: 1 }}>
-          <Text style={styles.stationName}>{item.name}</Text>
-          <Text style={styles.price}>{item.price}</Text>
+          <Text style={styles.stationName}>Đến ga {item.name}</Text>
+          <Text style={styles.price}>{item.fare}.000 đ</Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -53,11 +73,11 @@ const BuyTurnTicket = () => {
 
   return (
     <View style={styles.container}>
-      <Header name="Vé lượt - Đi từ ga Bến Thành" />
+      <Header name={`Vé lượt - Đi từ ga ${stationName}`} />
 
       <FlatList // dùng FlatList thì đã có thuộc tính data, nếu muốn .map ra từng đối tượng thì dùng ScrollView hoặc View
-        data={stations}
-        keyExtractor={(item, idx) => idx.toString()}
+        data={endStations}
+        keyExtractor={(item) => item.id.toString()}
         renderItem={renderItem}
         contentContainerStyle={{ paddingBottom: 24 }}
         showsVerticalScrollIndicator={false}
@@ -68,12 +88,16 @@ const BuyTurnTicket = () => {
         onClose={closeModal}
         title={selectedStation?.name}
         infoRows={[
-          { label: "Loại vé: ", value: selectedStation?.name },
+          { label: "Loại vé: ", value: "Vé lượt" },
           { label: "HSD: ", value: "24h kể từ thời điểm kích hoạt" },
           {
             label: "Lưu ý: ",
-            value: "Tự động kích hoạt sau 30 ngày kể từ ngày mua vé",
+            value: "Vé sử dụng một lần",
             isWarning: true,
+          },
+          {
+            label: "Mô tả: ",
+            value: stationName + " - " + selectedStation?.name,
           },
         ]}
         price={selectedStation?.price}

@@ -39,6 +39,16 @@ export const readStartStationsByLineIdAPI = async (lineId) => {
   return res.data;
 };
 
+export const readEndStationByLineIdStationIdAPI = async (
+  lineId,
+  startStationId
+) => {
+  const res = await api.get(
+    `/v1/lines/${lineId}/start-stations/${startStationId}`
+  );
+  return res.data;
+};
+
 //Station API
 export const readStationsAPI = async () => {
   const res = await api.get(`/v1/stations?page=1&size=10&sort=id`);

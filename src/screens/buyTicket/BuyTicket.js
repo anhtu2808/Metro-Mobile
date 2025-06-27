@@ -29,7 +29,7 @@ const BuyTicket = () => {
   const [stations, setStations] = useState([]);
   const [selectedLineId, setSelectedLineId] = useState(""); // khai báo để lấy được lineId để mà truyền xuống lấy station.
   const selectedLine = lines.find((line) => line.id === selectedLineId);
-  const sortedStations = [...stations].sort((a, b) => b.id - a.id); // sắp xếp lại id vì BE đặt id sai thứ tự
+  // const sortedStations = [...stations].sort((a, b) => b.id - a.id); // sắp xếp lại id vì BE đặt id sai thứ tự
 
   const fetchLines = async () => {
     try {
@@ -75,9 +75,6 @@ const BuyTicket = () => {
       fetchStations(selectedLineId);
     }
   }, [selectedLineId]);
-
-  console.log("linessssssssssssssssssssssssss:", selectedLine);
-  console.log("stationsssssssssssssssssssssss:", stations);
   return (
     <ScrollView style={styles.container}>
       <Header name="Mua vé" />
@@ -126,11 +123,18 @@ const BuyTicket = () => {
 
       {/* Danh sách ga */}
       <View style={{ marginTop: 24, marginBottom: 50 }}>
-        {sortedStations.map((station) => (
+        {stations.map((station) => (
           <View key={station.id} style={styles.stationRow}>
             <Text style={styles.stationText}>Đi từ ga {station.name}</Text>
             <TouchableOpacity
-              onPress={() => navigation.navigate("BuyTurnTicket")}
+              onPress={() =>
+                navigation.navigate("BuyTurnTicket", {
+                  // Truyền params ở đây
+                  lineId: selectedLineId,
+                  stationId: station.id,
+                  stationName: station.name, // Truyền thêm tên ga để hiển thị trên header
+                })
+              }
             >
               <Text style={styles.detailText}>Xem chi tiết</Text>
             </TouchableOpacity>
