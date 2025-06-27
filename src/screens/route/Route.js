@@ -79,7 +79,7 @@ export default function MetroMapScreen() {
   }, [lines]);
 
   useEffect(() => {
-    // Khi selectedLineId thay đổi, fetch stations và set mapRegion
+    // Kiểm tra nếu có lineId r thì truyền tham số zô để lấy station
     if (selectedLineId) {
       fetchStationsByLineId(selectedLineId);
     }

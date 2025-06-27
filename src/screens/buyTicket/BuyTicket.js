@@ -70,6 +70,7 @@ const BuyTicket = () => {
   }, [lines]);
 
   useEffect(() => {
+    // Kiểm tra nếu có lineId r thì truyền tham số zô để lấy station
     if (selectedLineId) {
       fetchStations(selectedLineId);
     }
