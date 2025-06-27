@@ -71,6 +71,7 @@ const BuyTurnTicket = ({ route }) => {
     </TouchableOpacity>
   );
 
+  const fareTicket = selectedStation?.fare + ".000 đ";
   return (
     <View style={styles.container}>
       <Header name={`Vé lượt - Đi từ ga ${stationName}`} />
@@ -100,10 +101,15 @@ const BuyTurnTicket = ({ route }) => {
             value: stationName + " - " + selectedStation?.name,
           },
         ]}
-        price={selectedStation?.price}
+        price={fareTicket}
         onBuy={() => {
           setModalVisible(false);
-          navigation.navigate("Invoice", { ticket: selectedStation });
+          navigation.navigate("Invoice", {
+            // thay vì chuyền đủ hết thông tin nhưng những thông tin đều bị lặp lại giá trị, nên chuyền chung chung 3 tham số thôi
+            productName: stationName + " - " + selectedStation?.name,
+            price: fareTicket,
+            quantity: 1,
+          });
         }}
       />
     </View>
