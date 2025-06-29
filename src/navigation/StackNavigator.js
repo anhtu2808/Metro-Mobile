@@ -13,6 +13,7 @@ import AdjustTicket from "../screens/adjustTicket/AdjustTicket";
 import News from "../screens/news/News";
 import NewsDetail from "../screens/news/NewsDetail";
 import MetroMapScreen from "../screens/route/Route";
+import Guideline from "../screens/guideline/Guideline";
 
 const Stack = createNativeStackNavigator();
 
@@ -82,6 +83,11 @@ function StackNavigator() {
       <Stack.Screen
         name="Route"
         component={MetroMapScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Guideline"
+        component={Guideline}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

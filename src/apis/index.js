@@ -62,3 +62,11 @@ export const readBusByStationAPI = async (stationId) => {
   );
   return res.data;
 };
+
+//Content API
+export const readContentAPI = async (content) => {
+  const res = await api.get(
+    `/v1/contents/by-type?type=${content}&page=0&size=10`
+  );
+  return res.data;
+};
