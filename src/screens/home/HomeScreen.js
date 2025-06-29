@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -6,73 +6,71 @@ import {
   Image,
   FlatList,
   TouchableOpacity,
+  ActivityIndicator, // Thêm để hiển thị loading
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { Video } from "expo-av";
 import { useSelector } from "react-redux";
-
-const newsList = [
-  {
-    id: "1",
-    title: "Chương trình đồng hành tặng vé Metro cho học sinh...",
-    subtitle: "HCMC METRO- Hành trình kết nối yêu thương",
-    time: "một ngày trước",
-    image: require("../../assets/metro.jpg"),
-    content: "Dự án Hỗ trợ vé đi tàu cho đối tượng có hoàn cảnh khó khăn...",
-  },
-  {
-    id: "2",
-    title: "Metro miễn phí vé hai ngày – Tri ân lịch sử...",
-    subtitle: "Miễn phí vé tuyến Metro Số 1 trong hai ngày 30/4 & 01/5/2025...",
-    time: "khoảng 1 tháng trước",
-    image: require("../../assets/metro.jpg"),
-    content: "Miễn phí vé tuyến Metro Số 1 trong hai ngày 30/4 & 01/5/2025...",
-  },
-  {
-    id: "3",
-    title: "HCMC Metro tổ chức ngày hội trải nghiệm tuyến số 1",
-    subtitle: "Cơ hội trải nghiệm thực tế trước ngày vận hành chính thức",
-    time: "2 tuần trước",
-    image: require("../../assets/metro.jpg"),
-    content:
-      "Người dân TP.HCM được mời trải nghiệm miễn phí tuyến Metro Số 1 với nhiều hoạt động hấp dẫn như tham quan, chụp hình và giao lưu với nhân viên vận hành.",
-  },
-  {
-    id: "4",
-    title: "Tuyến Metro Số 1 hoàn tất giai đoạn chạy thử",
-    subtitle: "Chuẩn bị bước vào vận hành thương mại",
-    time: "3 ngày trước",
-    image: require("../../assets/metro.jpg"),
-    content:
-      "Sau nhiều tháng thử nghiệm, tuyến Metro Số 1 đã hoàn tất các bài kiểm tra kỹ thuật và sẵn sàng vận hành chính thức vào quý 3 năm 2025.",
-  },
-  {
-    id: "5",
-    title: "Metro TP.HCM ký kết hợp tác phát triển du lịch xanh",
-    subtitle: "Hướng tới thành phố bền vững và thân thiện với môi trường",
-    time: "1 tuần trước",
-    image: require("../../assets/metro.jpg"),
-    content:
-      "Ban quản lý Metro TP.HCM phối hợp cùng Sở Du lịch triển khai chương trình tour kết hợp sử dụng Metro, thúc đẩy hình ảnh thành phố năng động và xanh.",
-  },
-];
+import { readContentAPI } from "../../apis";
+import { formatDate } from "../../components/formatDate/formatters";
 
 export default function HomeScreen() {
   const navigation = useNavigation();
-  const horizontalCards = [
-    {
-      id: "1",
-      image: require("../../assets/metro.jpg"),
-      text: "Hướng dẫn sử dụng",
-    },
-    {
-      id: "2",
-      image: require("../../assets/metro.jpg"),
-      text: "Hướng dẫn sử dụng",
-    },
-  ];
   const { user, isAuthenticated } = useSelector((state) => state.user);
+  // 1. Tách state cho news và guidelines
+  const [news, setNews] = useState([]);
+  const [guidelines, setGuidelines] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAllContent = async () => {
+      try {
+        // Fetch News
+        const newsResponse = await readContentAPI("NEWS");
+        if (newsResponse && newsResponse.data) {
+          setNews(newsResponse.data);
+        }
+
+        // Fetch Guidelines
+        const guidelineResponse = await readContentAPI("GUIDELINE");
+        if (guidelineResponse && guidelineResponse.data) {
+          setGuidelines(guidelineResponse.data);
+        }
+      } catch (error) {
+        console.error("Error fetching contents:", error);
+      } finally {
+        setLoading(false); // Dừng loading sau khi fetch xong
+      }
+    };
+    fetchAllContent();
+  }, []);
+
+  // 3. Sửa lại renderItem cho Hướng dẫn sử dụng
+  const renderGuidelineItem = ({ item }) => (
+    <View style={styles.boardInstruction}>
+      <TouchableOpacity
+        onPress={() => navigation.navigate("Guideline", { guidelines: item })}
+      >
+        {/* 4. Sửa lại Image source để dùng URL từ API */}
+        <Image
+          source={{ uri: item.imageUrl }} // Giả sử API trả về trường 'imageUrl'
+          style={styles.imageInstruction}
+        />
+        <Text style={styles.guidelineTitle}>{item.title}</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  // Hiển thị loading nếu chưa có dữ liệu
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#007aff" />
+      </View>
+    );
+  }
+
   return (
     <FlatList
       ListHeaderComponent={
@@ -167,44 +165,42 @@ export default function HomeScreen() {
 
           {/* Hướng dẫn sử dụng */}
           <FlatList
-            data={horizontalCards}
+            data={guidelines}
             horizontal
-            keyExtractor={(item) => item.id}
+            keyExtractor={(item) => item.id.toString()}
             showsHorizontalScrollIndicator={false}
-            renderItem={({ item }) => (
-              <View style={styles.boardInstruction}>
-                <Image source={item.image} style={styles.imageInstruction} />
-                <Text>{item.text}</Text>
-              </View>
-            )}
+            renderItem={renderGuidelineItem}
+            contentContainerStyle={{ paddingHorizontal: 12, paddingBottom: 12 }}
           />
 
           {/* Tin tức */}
           <View style={styles.newsHeaderRow}>
             <Text style={styles.newsSectionTitle}>Tin tức</Text>
             <TouchableOpacity
-              onPress={() => navigation.navigate("News", { newsList })}
+              onPress={() => navigation.navigate("News", { Allnews: news })}
             >
               <Text style={styles.allText}>Tất cả</Text>
             </TouchableOpacity>
           </View>
           <FlatList
-            data={newsList}
+            data={news}
             horizontal
-            keyExtractor={(item) => item.id}
+            keyExtractor={(item) => item.id.toString()}
             showsHorizontalScrollIndicator={false}
             renderItem={({ item }) => (
               <TouchableOpacity
                 style={styles.newsCard}
                 onPress={() =>
-                  navigation.navigate("NewsDetail", { news: item })
+                  navigation.navigate("NewsDetail", { newsItem: item })
                 }
               >
-                <Image source={item.image} style={styles.newsImage} />
+                <Image source={item.imageUrl} style={styles.newsImage} />
                 <Text style={styles.newsTitle} numberOfLines={2}>
                   {item.title}
                 </Text>
-                <Text style={styles.newsTime}>{item.time}</Text>
+                <Text style={styles.newsTime}>
+                  {formatDate(item.publishAt) || "mới đây"}
+                </Text>
               </TouchableOpacity>
             )}
             contentContainerStyle={{ paddingHorizontal: 12, paddingBottom: 12 }}
@@ -249,7 +245,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     paddingBottom: 16,
     borderRadius: 10,
-    marginTop: 10,
+    marginTop: 20,
     alignItems: "center",
     elevation: 2,
   },
@@ -288,6 +284,12 @@ const styles = StyleSheet.create({
     color: "#1976d2",
     fontSize: 15,
     fontWeight: "bold",
+  },
+  guidelineTitle: {
+    fontWeight: "bold",
+    fontSize: 15,
+    color: "#222",
+    marginLeft: 20,
   },
   newsCard: {
     width: 220,

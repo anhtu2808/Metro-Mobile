@@ -10,14 +10,22 @@ import {
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { formatDate } from "../../components/formatDate/formatters";
-const NewsDetail = () => {
+const Guideline = () => {
   const route = useRoute();
   const navigation = useNavigation();
-  const news = route.params?.newsItem;
+  const guidelines = route.params?.guidelines;
   const author = {
     1: "Ban lý Metro",
   };
-
+  // Thêm vào đầu component Guideline
+  if (!guidelines) {
+    return (
+      <View style={styles.centered}>
+        <Text>Không tìm thấy nội dung hướng dẫn.</Text>
+      </View>
+    );
+  }
+  console.log("aaaaaaaaa", guidelines);
   return (
     <ScrollView style={{ flex: 1, backgroundColor: "#ebf7fa" }}>
       <View style={styles.header}>
@@ -29,27 +37,29 @@ const NewsDetail = () => {
           <Ionicons name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle} numberOfLines={1}>
-          {news?.title}
+          {guidelines?.title}
         </Text>
       </View>
-      {/* <Image source={news.imageUrl} style={styles.detailImage} /> */}
+      {/* <Image source={guidelines.imageUrl} style={styles.detailImage} /> */}
       <Image
         source={
-          news.imageUrl
-            ? { uri: news.imageUrl }
+          guidelines?.imageUrl
+            ? { uri: guidelines?.imageUrl }
             : require("../../assets/metro.jpg") // Ảnh dự phòng
         }
         style={styles.detailImage}
       />
-      <Text style={styles.detailContent}>{news?.summary}</Text>
+      <Text style={styles.detailContent}>{guidelines?.summary}</Text>
       <View style={{ padding: 16 }}>
         {/* Thông tin tác giả và ngày đăng */}
         <View style={styles.metaInfo}>
           <Text style={styles.authorText}>Tác giả: {author[1]}</Text>
-          <Text style={styles.timeText}>{formatDate(news.publishAt)}</Text>
+          <Text style={styles.timeText}>
+            {formatDate(guidelines?.publishAt)}
+          </Text>
         </View>
 
-        <Text style={styles.detailContent}>{news?.body}</Text>
+        <Text style={styles.detailContent}>{guidelines?.body}</Text>
       </View>
     </ScrollView>
   );
@@ -83,4 +93,4 @@ const styles = StyleSheet.create({
   detailContent: { fontSize: 16, color: "#222", marginTop: 8 },
 });
 
-export default NewsDetail;
+export default Guideline;
