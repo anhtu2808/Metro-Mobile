@@ -4,11 +4,11 @@
     "slug": "Metro-Mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/metro.jpg",
+    "icon": "./src/assets/metro.jpg",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/metro.jpg",
+      "image": "./src/assets/metro.jpg",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -17,14 +17,14 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/metro.jpg",
+        "foregroundImage": "./src/assets/metro.jpg",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
       "package": "com.contraicung.MetroMobile"
     },
     "web": {
-      "favicon": "./assets/metro.jpg"
+      "favicon": "./src/assets/metro.jpg"
     },
     "plugins": ["@react-native-google-signin/google-signin"],
     "extra": {
