@@ -10,10 +10,14 @@ import {
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import { readInfoAPI, fectchLoginAPI } from "../../apis";
+import { readInfoAPI, fectchLoginAPI, fetchLoginGoogleAPI } from "../../apis";
 import { useDispatch } from "react-redux";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { loginSuccess } from "../../store/userSlice";
+import {
+  GoogleSignin,
+  statusCodes,
+} from "@react-native-google-signin/google-signin"; // Thêm import này
 
 function Login() {
   const [password, setPasword] = useState("");
@@ -57,6 +61,49 @@ function Login() {
       });
   };
 
+  // Thêm hàm xử lý đăng nhập Google
+  const handleGoogleLogin = async () => {
+    try {
+      // 1. Mở cửa sổ đăng nhập của Google
+      await GoogleSignin.hasPlayServices();
+      const userInfo = await GoogleSignin.signIn();
+
+      // 2. Lấy idToken
+      const idToken = userInfo.idToken;
+      console.log("Đã có Google ID Token:", idToken);
+
+      if (idToken) {
+        // 3. Gửi idToken đến backend của bạn
+        const response = await fetchLoginGoogleAPI({ idToken }); // Truyền object { idToken }
+
+        // 4. Xử lý logic sau khi đăng nhập thành công (giống hệt handleLogin)
+        await AsyncStorage.setItem("accessToken", response.result.token);
+        const loggedInUserInfo = await readInfoAPI();
+        dispatch(
+          loginSuccess({
+            user: loggedInUserInfo.result,
+            accessToken: response.result.token,
+          })
+        );
+        navigation.navigate("Home");
+        Alert.alert(
+          "Đăng nhập thành công",
+          `Chào mừng ${loggedInUserInfo.result.fullName}!`
+        );
+      }
+    } catch (error) {
+      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+        console.log("Người dùng đã hủy đăng nhập");
+      } else {
+        console.error("Lỗi đăng nhập Google:", error);
+        Alert.alert(
+          "Lỗi",
+          "Đăng nhập bằng Google không thành công. Vui lòng thử lại."
+        );
+      }
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Image source={require("../../assets/metro.jpg")} style={styles.image} />
@@ -94,7 +141,10 @@ function Login() {
           <Text style={styles.loginButtonText}>Đăng Nhập</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.loginGoogleButton}>
+        <TouchableOpacity
+          style={styles.loginGoogleButton}
+          onPress={handleGoogleLogin} // Gán hàm mới vào đây
+        >
           <Text style={styles.loginGoogleButtonText}>Đăng Nhập Google</Text>
         </TouchableOpacity>
 

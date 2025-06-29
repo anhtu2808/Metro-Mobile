@@ -16,6 +16,11 @@ export const fetchLogoutAPI = async () => {
   return res.data;
 };
 
+export const fetchLoginGoogleAPI = async (data) => {
+  const res = await api.post("/v1/auth/oauth/google", data);
+  return res.data;
+};
+
 //Register API
 export const createRegisterAPI = async (data) => {
   const res = await api.post("/v1/users/register", data);
