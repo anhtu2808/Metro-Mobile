@@ -16,6 +16,11 @@ export const fetchLogoutAPI = async () => {
   return res.data;
 };
 
+export const fetchLoginGoogleAPI = async (data) => {
+  const res = await api.post("/v1/auth/oauth/google", data);
+  return res.data;
+};
+
 //Register API
 export const createRegisterAPI = async (data) => {
   const res = await api.post("/v1/users/register", data);
@@ -68,5 +73,10 @@ export const readContentAPI = async (content) => {
   const res = await api.get(
     `/v1/contents/by-type?type=${content}&page=0&size=10`
   );
+  return res.data;
+};
+
+export const createUploadImageAPI = async (image) => {
+  const res = await api.post("/v1/uploads/users", image);
   return res.data;
 };
