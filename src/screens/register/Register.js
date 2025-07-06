@@ -22,7 +22,7 @@ const Register = () => {
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
-  const [avatarUrl, setAvatarUrl] = useState(null);
+  // const [avatarUrl, setAvatarUrl] = useState(null);
   const navigation = useNavigation();
 
   const handleRegister = () => {
@@ -39,7 +39,7 @@ const Register = () => {
       address,
       phone,
       email,
-      avatarUrl: avatarUrl || "", // Nếu không có avatarUrl thì để trống
+      // avatarUrl: avatarUrl || "", // Nếu không có avatarUrl thì để trống
     };
     createRegisterAPI(data)
       .then((response) => {
@@ -104,7 +104,6 @@ const Register = () => {
           autoCapitalize="none"
           onChangeText={setEmail}
         />
-        <ImageUploader setAvatarUrl={setAvatarUrl} />
         <TouchableOpacity onPress={handleRegister} style={styles.button}>
           <Text style={styles.buttonText}>Đăng ký</Text>
         </TouchableOpacity>

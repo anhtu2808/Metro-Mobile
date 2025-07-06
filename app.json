@@ -13,7 +13,8 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.contraicung.MetroMobile"
     },
     "android": {
       "adaptiveIcon": {
@@ -26,11 +27,11 @@
     "web": {
       "favicon": "./src/assets/metro.jpg"
     },
-    "plugins": ["@react-native-google-signin/google-signin"],
     "extra": {
       "eas": {
         "projectId": "97b27b2e-6bdb-463d-9297-2fe69f27c449"
       }
-    }
+    },
+    "plugins": ["expo-web-browser"]
   }
 }

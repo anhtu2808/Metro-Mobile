@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Button, Image, StyleSheet, View, Text } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import api from "../../services/api";
 
 export default function ImageUploader({ setAvatarUrl }) {
   // Thêm setAvatarUrl để truyền uri lên Register
@@ -21,9 +22,31 @@ export default function ImageUploader({ setAvatarUrl }) {
       quality: 1,
     });
 
+    // if (!result.canceled) {
+    //   setImage(result.assets[0].uri);
+    //   setAvatarUrl && setAvatarUrl(result.assets[0].uri); // truyền uri lên cha
+    // }
     if (!result.canceled) {
-      setImage(result.assets[0].uri);
-      setAvatarUrl && setAvatarUrl(result.assets[0].uri); // truyền uri lên Register
+      const uri = result.assets[0].uri;
+      const formData = new FormData();
+      formData.append("file", {
+        uri,
+        name: "avatar.jpg",
+        type: "image/jpeg",
+      });
+
+      // Bước 2: Upload lên AWS qua API
+      const uploadRes = await api.post("/v1/uploads/users", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      if (uploadRes.data.code === 200) {
+        setImage(result.assets[0].uri);
+      }
+
+      const imageUrl = uploadRes.data.result; // link ảnh trả về
+      console.log("uploadddddddddddddddd", uploadRes.data.result);
+      return imageUrl;
     }
   };
 

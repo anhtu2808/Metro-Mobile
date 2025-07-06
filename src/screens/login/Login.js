@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
   TouchableOpacity,
@@ -14,17 +14,31 @@ import { readInfoAPI, fectchLoginAPI, fetchLoginGoogleAPI } from "../../apis";
 import { useDispatch } from "react-redux";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { loginSuccess } from "../../store/userSlice";
-import {
-  GoogleSignin,
-  statusCodes,
-} from "@react-native-google-signin/google-signin"; // Thêm import này
+
+// Thêm các import cho expo-auth-session
+import * as WebBrowser from "expo-web-browser";
+import * as Google from "expo-auth-session/providers/google";
+WebBrowser.maybeCompleteAuthSession();
 
 function Login() {
   const [password, setPasword] = useState("");
   const [username, setUsername] = useState("");
-  const [showPassword, setShowPassword] = useState(false); // Add this line
+  const [showPassword, setShowPassword] = useState(false);
   const navigation = useNavigation();
   const dispatch = useDispatch();
+
+  // Thay thế GoogleSignin bằng useAuthRequest
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    expoClientId:
+      "18046394453-11jgpgqqh0pu3fkdej41d3lj3ps4muo9.apps.googleusercontent.com",
+    androidClientId:
+      "18046394453-ddm07h7r5rn7mgd2se1ljv35smvbm3si.apps.googleusercontent.com",
+    iosClientId:
+      "18046394453-rlng833atqajg639mh3435pt2gtpg3k7.apps.googleusercontent.com",
+    webClientId:
+      "709789750534-gt40kns8437i96kl0olichbo0og1hv97.apps.googleusercontent.com",
+  });
+  // scopes: ['profile', 'email'] // nếu cần
 
   const handleLogin = () => {
     if (username === "" || password === "") {
@@ -44,6 +58,7 @@ function Login() {
         // Lưu token vào AsyncStorage nếu cần
         await AsyncStorage.setItem("accessToken", response.result.token);
         // Gọi tiếp API lấy thông tin user
+        console.log("accessTokennnnnnnnnnnnnnnn", response.result.token);
         const userInfo = await readInfoAPI();
         // Lưu user vào Redux
         dispatch(
@@ -61,46 +76,41 @@ function Login() {
       });
   };
 
-  // Thêm hàm xử lý đăng nhập Google
-  const handleGoogleLogin = async () => {
+  useEffect(() => {
+    if (response?.type === "success") {
+      const { authentication } = response;
+      console.log("authhhhhhhhhhhhhhhhhhh", authentication);
+      // authentication.accessToken, authentication.idToken
+      handleGoogleAuth(authentication?.idToken);
+    }
+  }, [response]);
+
+  const handleGoogleAuth = async (idToken) => {
+    if (!idToken) {
+      Alert.alert("Lỗi", "Không lấy được idToken từ Google.");
+      return;
+    }
+    console.log("idTokennnnnnnnnnnnnnnnnnn", idToken);
     try {
-      // 1. Mở cửa sổ đăng nhập của Google
-      await GoogleSignin.hasPlayServices();
-      const userInfo = await GoogleSignin.signIn();
-
-      // 2. Lấy idToken
-      const idToken = userInfo.idToken;
-      console.log("Đã có Google ID Token:", idToken);
-
-      if (idToken) {
-        // 3. Gửi idToken đến backend của bạn
-        const response = await fetchLoginGoogleAPI({ idToken }); // Truyền object { idToken }
-
-        // 4. Xử lý logic sau khi đăng nhập thành công (giống hệt handleLogin)
-        await AsyncStorage.setItem("accessToken", response.result.token);
-        const loggedInUserInfo = await readInfoAPI();
-        dispatch(
-          loginSuccess({
-            user: loggedInUserInfo.result,
-            accessToken: response.result.token,
-          })
-        );
-        navigation.navigate("Home");
-        Alert.alert(
-          "Đăng nhập thành công",
-          `Chào mừng ${loggedInUserInfo.result.fullName}!`
-        );
-      }
+      const response = await fetchLoginGoogleAPI({ idToken });
+      await AsyncStorage.setItem("accessToken", response.result.token);
+      const loggedInUserInfo = await readInfoAPI();
+      dispatch(
+        loginSuccess({
+          user: loggedInUserInfo.result,
+          accessToken: response.result.token,
+        })
+      );
+      navigation.navigate("Home");
+      Alert.alert(
+        "Đăng nhập thành công",
+        `Chào mừng ${loggedInUserInfo.result.fullName}!`
+      );
     } catch (error) {
-      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-        console.log("Người dùng đã hủy đăng nhập");
-      } else {
-        console.error("Lỗi đăng nhập Google:", error);
-        Alert.alert(
-          "Lỗi",
-          "Đăng nhập bằng Google không thành công. Vui lòng thử lại."
-        );
-      }
+      Alert.alert(
+        "Lỗi",
+        "Đăng nhập bằng Google không thành công. Vui lòng thử lại."
+      );
     }
   };
 
@@ -143,7 +153,8 @@ function Login() {
 
         <TouchableOpacity
           style={styles.loginGoogleButton}
-          onPress={handleGoogleLogin} // Gán hàm mới vào đây
+          onPress={() => promptAsync()} // Sử dụng promptAsync để đăng nhập Google
+          disabled={!request}
         >
           <Text style={styles.loginGoogleButtonText}>Đăng Nhập Google</Text>
         </TouchableOpacity>

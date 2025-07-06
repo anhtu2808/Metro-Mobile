@@ -75,3 +75,8 @@ export const readContentAPI = async (content) => {
   );
   return res.data;
 };
+
+export const createUploadImageAPI = async (image) => {
+  const res = await api.post("/v1/uploads/users", image);
+  return res.data;
+};
