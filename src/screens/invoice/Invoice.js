@@ -10,27 +10,107 @@ import {
   ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useRoute, useNavigation } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import Header from "../../components/header/Header";
+import { createTicketOrderAPI } from "../../apis";
 
 const { width } = Dimensions.get("window");
+// Hiển thị thông tin vé giống TicketConfirmModal
+const ticketInfoByType = {
+  "Vé ngày": {
+    hsd: "24h kể từ thời điểm kích hoạt",
+    note: "Tự động kích hoạt sau 30 ngày kể từ ngày mua vé",
+  },
+  "Vé tuần": {
+    hsd: "7 ngày kể từ thời điểm kích hoạt",
+    note: "Tự động kích hoạt sau 60 ngày kể từ ngày mua vé",
+  },
+  "Vé tháng": {
+    hsd: "30 ngày kể từ thời điểm kích hoạt",
+    note: "Tự động kích hoạt sau 180 ngày kể từ ngày mua vé",
+  },
+  "Vé năm": {
+    hsd: "365 ngày kể từ thời điểm kích hoạt",
+    note: "Tự động kích hoạt sau 360 ngày kể từ ngày mua vé",
+  },
+  "Vé tháng học sinh": {
+    hsd: "30 ngày kể từ thời điểm kích hoạt",
+    note: "Tự động kích hoạt sau 180 ngày kể từ ngày mua vé",
+  },
+};
 
 const Invoice = ({ route }) => {
   const navigation = useNavigation();
-  const { productName, price, quantity } = route.params;
+  const {
+    ticketTypeId,
+    lineId,
+    startStationId,
+    endStationId,
+    productName,
+    price,
+    quantity,
+    isDurationTicket,
+  } = route.params;
   const [paymentModal, setPaymentModal] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState(null);
 
-  // Thông tin mẫu
-  // const ticketInfo = {
-  //   name: ticket?.name || "Vé lượt: Bến Thành – Nhà Hát Thành Phố",
-  //   price: ticket?.price || "6.000đ",
-  //   type: "Vé lượt",
-  //   hsd: "30 ngày kể từ ngày mua",
-  //   note: "Vé sử dụng một lần",
-  //   desc: ticket?.name || "Vé lượt: Bến Thành – Nhà Hát Thành Phố",
-  //   quantity: 1,
-  // };
+  const handlePay = async () => {
+    try {
+      const data = {
+        ticketTypeId,
+      };
+      if (!isDurationTicket) {
+        data.lineId = lineId;
+        data.startStationId = startStationId;
+        data.endStationId = endStationId;
+      }
+      // Gọi API tạo đơn hàng
+      const response = await createTicketOrderAPI(data);
+      console.log("Order responseeeeeeeeeeeeeeee:", response);
+      if (response && response.result) {
+        // Xử lý thành công, ví dụ chuyển trang hoặc thông báo
+        alert("Đặt vé thành công!");
+        navigation.goBack();
+      }
+    } catch (error) {
+      console.error("Error processing payment:", error);
+      alert("Thanh toán thất bại, vui lòng thử lại.");
+    }
+  };
+
+  const infoRows = isDurationTicket
+    ? [
+        {
+          label: "Loại vé: ",
+          value: productName,
+        },
+        {
+          label: "HSD: ",
+          value: ticketInfoByType[productName]?.hsd || "",
+        },
+        {
+          label: "Lưu ý: ",
+          value: ticketInfoByType[productName]?.note || "",
+          isWarning: true,
+        },
+        {
+          label: "Mô tả: ",
+          value: productName,
+        },
+      ]
+    : [
+        { label: "Loại vé: ", value: "Vé lượt" },
+        { label: "HSD: ", value: "24h kể từ thời điểm kích hoạt" },
+        {
+          label: "Lưu ý: ",
+          value: "Vé sử dụng một lần",
+          isWarning: true,
+        },
+        {
+          label: "Mô tả: ",
+          value: productName,
+        },
+      ];
 
   return (
     <View style={styles.container}>
@@ -94,24 +174,34 @@ const Invoice = ({ route }) => {
           Thông tin Vé lượt: {productName}
         </Text>
         <View style={styles.infoBox}>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Loại vé:</Text>
-            <Text style={styles.infoValue}>Vé lượt</Text>
-          </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>HSD:</Text>
-            <Text style={styles.infoValue}>30 ngày kể từ ngày mua</Text>
-          </View>
-          <View style={styles.infoRow}>
-            <Text style={[styles.infoLabel, { color: "#E53935" }]}>Lưu ý:</Text>
-            <Text style={[styles.infoValue, { color: "#E53935" }]}>
-              Vé sử dụng một lần
-            </Text>
-          </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Mô tả:</Text>
-            <Text style={styles.infoValue}>Vé lượt: {productName}</Text>
-          </View>
+          {infoRows.map((row, index) => (
+            <View
+              key={index}
+              style={{
+                flexDirection: "row",
+                marginBottom: 8,
+                alignItems: "center",
+              }}
+            >
+              <Text
+                style={{
+                  fontWeight: "bold",
+                  color: row.isWarning ? "#e53935" : "#1976d2",
+                  width: 100,
+                }}
+              >
+                {row.label}
+              </Text>
+              <Text
+                style={{
+                  color: row.isWarning ? "#e53935" : "#222",
+                  flexShrink: 1,
+                }}
+              >
+                {row.value}
+              </Text>
+            </View>
+          ))}
         </View>
       </ScrollView>
 
@@ -122,9 +212,7 @@ const Invoice = ({ route }) => {
           { backgroundColor: paymentMethod ? "#2D2E82" : "#B0B0B0" },
         ]}
         disabled={!paymentMethod}
-        onPress={() => {
-          // Xử lý thanh toán với VNPay
-        }}
+        onPress={handlePay}
       >
         <Text style={styles.payButtonText}>Thanh toán: {price}</Text>
       </TouchableOpacity>

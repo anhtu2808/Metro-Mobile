@@ -60,18 +60,18 @@ const BuyTurnTicket = ({ route }) => {
         <FontAwesome5
           name="ticket-alt"
           size={30}
-          color="#007aff"
+          color="#1976d2"
           style={{ marginRight: 30 }}
         />
         <View style={{ flex: 1 }}>
           <Text style={styles.stationName}>Đến ga {item.name}</Text>
-          <Text style={styles.price}>{item.fare}.000 đ</Text>
+          <Text style={styles.price}>{item.fare} đ</Text>
         </View>
       </View>
     </TouchableOpacity>
   );
 
-  const fareTicket = selectedStation?.fare + ".000 đ";
+  const fareTicket = selectedStation?.fare + " đ";
   return (
     <View style={styles.container}>
       <Header name={`Vé lượt - Đi từ ga ${stationName}`} />
@@ -84,34 +84,40 @@ const BuyTurnTicket = ({ route }) => {
         showsVerticalScrollIndicator={false}
       />
 
-      <TicketConfirmModal
-        visible={modalVisible}
-        onClose={closeModal}
-        title={selectedStation?.name}
-        infoRows={[
-          { label: "Loại vé: ", value: "Vé lượt" },
-          { label: "HSD: ", value: "24h kể từ thời điểm kích hoạt" },
-          {
-            label: "Lưu ý: ",
-            value: "Vé sử dụng một lần",
-            isWarning: true,
-          },
-          {
-            label: "Mô tả: ",
-            value: stationName + " - " + selectedStation?.name,
-          },
-        ]}
-        price={fareTicket}
-        onBuy={() => {
-          setModalVisible(false);
-          navigation.navigate("Invoice", {
-            // thay vì chuyền đủ hết thông tin nhưng những thông tin đều bị lặp lại giá trị, nên chuyền chung chung 3 tham số thôi
-            productName: stationName + " - " + selectedStation?.name,
-            price: fareTicket,
-            quantity: 1,
-          });
-        }}
-      />
+      {selectedStation && (
+        <TicketConfirmModal
+          visible={modalVisible}
+          onClose={closeModal}
+          title={selectedStation.name}
+          infoRows={[
+            { label: "Loại vé: ", value: "Vé lượt" },
+            { label: "HSD: ", value: "24h kể từ thời điểm kích hoạt" },
+            {
+              label: "Lưu ý: ",
+              value: "Vé sử dụng một lần",
+              isWarning: true,
+            },
+            {
+              label: "Mô tả: ",
+              value: `${stationName} - ${selectedStation.name}`,
+            },
+          ]}
+          price={`${selectedStation.fare.toLocaleString("vi-VN")} đ`}
+          onBuy={() => {
+            setModalVisible(false);
+            navigation.navigate("Invoice", {
+              ticketTypeId: 1, // vé lượt fix cứng
+              lineId: lineId,
+              startStationId: stationId,
+              endStationId: selectedStation.id,
+              productName: `${stationName} - ${selectedStation.name}`,
+              price: `${selectedStation.fare.toLocaleString("vi-VN")} đ`,
+              quantity: 1,
+              isDurationTicket: false,
+            });
+          }}
+        />
+      )}
     </View>
   );
 };

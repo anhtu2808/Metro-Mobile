@@ -18,6 +18,7 @@ import { loginSuccess } from "../../store/userSlice";
 // Thêm các import cho expo-auth-session
 import * as WebBrowser from "expo-web-browser";
 import * as Google from "expo-auth-session/providers/google";
+import { Video } from "expo-av";
 WebBrowser.maybeCompleteAuthSession();
 
 function Login() {
@@ -51,14 +52,13 @@ function Login() {
       password: password,
     };
 
-    console.log("Login dataaaaaaaaaaaaaaaaaaaaaaaa:", data);
     // Handle login logic here
     fectchLoginAPI(data)
       .then(async (response) => {
         // Lưu token vào AsyncStorage nếu cần
         await AsyncStorage.setItem("accessToken", response.result.token);
         // Gọi tiếp API lấy thông tin user
-        console.log("accessTokennnnnnnnnnnnnnnn", response.result.token);
+
         const userInfo = await readInfoAPI();
         // Lưu user vào Redux
         dispatch(
@@ -116,7 +116,13 @@ function Login() {
 
   return (
     <View style={styles.container}>
-      <Image source={require("../../assets/metro.jpg")} style={styles.image} />
+      <Video
+        source={require("../../assets/metro_video.mp4")}
+        style={styles.image}
+        resizeMode="cover"
+        isLooping
+        shouldPlay
+      />
       <View style={styles.board}>
         <Text style={styles.title}>Chào Mừng Bạn</Text>
         <TextInput
@@ -174,7 +180,7 @@ const styles = StyleSheet.create({
   },
   image: {
     width: "100%",
-    height: 400,
+    height: 440,
     resizeMode: "stretch",
   },
   board: {

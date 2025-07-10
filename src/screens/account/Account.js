@@ -110,10 +110,7 @@ const Account = () => {
     <View style={styles.container}>
       <Header name="Thông tin cá nhân" />
       <View style={styles.avatarContainer}>
-        <TouchableOpacity
-          onLongPress={() => setShowAvatarModal(true)}
-          delayLongPress={300}
-        >
+        <TouchableOpacity onPress={() => setShowAvatarModal(true)}>
           <Image
             source={
               avatarUrl ? { uri: avatarUrl } : require("../../assets/metro.jpg")

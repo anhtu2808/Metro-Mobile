@@ -3,6 +3,7 @@ import axios from "axios";
 import { API_ROOT } from "../utils/constants.js";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+//USER SERVICE
 //Login & Logout API
 export const fectchLoginAPI = async (data) => {
   const res = await api.post("/v1/auth/login", data);
@@ -33,6 +34,7 @@ export const readInfoAPI = async () => {
   return res.data;
 };
 
+//ROUTE SERVICE
 //Line API
 export const readLinesAPI = async () => {
   const res = await api.get("/v1/lines?page=1&size=10&sort=id");
@@ -56,7 +58,7 @@ export const readEndStationByLineIdStationIdAPI = async (
 
 //Station API
 export const readStationsAPI = async () => {
-  const res = await api.get(`/v1/stations?page=1&size=10&sort=id`);
+  const res = await api.get("/v1/stations?page=1&size=10&sort=id");
   return res.data;
 };
 
@@ -68,6 +70,7 @@ export const readBusByStationAPI = async (stationId) => {
   return res.data;
 };
 
+//CONTENT SERVICE
 //Content API
 export const readContentAPI = async (content) => {
   const res = await api.get(
@@ -78,5 +81,41 @@ export const readContentAPI = async (content) => {
 
 export const createUploadImageAPI = async (image) => {
   const res = await api.post("/v1/uploads/users", image);
+  return res.data;
+};
+
+//ORDER SERVICE
+//ticket-order API
+export const createTicketOrderAPI = async (data) => {
+  const res = await api.post("/v1/ticket-orders", data);
+  return res.data;
+};
+
+//ticket-order by dynamic parameters
+// ORDER SERVICE
+export const getTicketOrdersAPI = async (params) => {
+  const queryParams = new URLSearchParams();
+
+  // Set default page and size if not provided
+  if (params.page !== undefined) queryParams.append("page", params.page);
+  if (params.size !== undefined) queryParams.append("size", params.size);
+
+  // Optional filters
+  if (params.userId !== undefined) queryParams.append("userId", params.userId);
+  if (params.isStatic !== undefined)
+    queryParams.append("isStatic", params.isStatic);
+  if (params.isStudent !== undefined)
+    queryParams.append("isStudent", params.isStudent);
+  if (params.status !== undefined && params.status !== "")
+    queryParams.append("status", params.status);
+
+  const res = await api.get(`/v1/ticket-orders?${queryParams.toString()}`);
+  return res.data;
+};
+
+//TICKET SERVICE
+//ticket
+export const readTicketTypeAPI = async () => {
+  const res = await api.get("/v1/ticket-types?page=1&size=10&sort=id");
   return res.data;
 };
