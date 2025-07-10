@@ -76,7 +76,7 @@ export default function HomeScreen() {
       ListHeaderComponent={
         <View>
           <Video
-            source={require("../../assets/metro.mp4")}
+            source={require("../../assets/metro_video.mp4")}
             style={styles.image}
             resizeMode="cover"
             isLooping
@@ -91,7 +91,7 @@ export default function HomeScreen() {
                 }
               >
                 <View style={styles.iconContent}>
-                  <MaterialIcons name="local-atm" size={30} color="#000" />
+                  <MaterialIcons name="local-atm" size={30} color="#1976d2" />
                   <Text style={styles.iconLabel}>Mua Vé</Text>
                 </View>
               </TouchableOpacity>
@@ -108,7 +108,7 @@ export default function HomeScreen() {
                   <MaterialIcons
                     name="confirmation-number"
                     size={30}
-                    color="#000"
+                    color="#1976d2"
                   />
                   <Text style={styles.iconLabel}>Vé Của Tôi</Text>
                 </View>
@@ -121,7 +121,7 @@ export default function HomeScreen() {
                 onPress={() => navigation.navigate("AdjustTicket")}
               >
                 <View style={styles.iconContent}>
-                  <MaterialIcons name="sync" size={30} color="#000" />
+                  <MaterialIcons name="sync" size={30} color="#1976d2" />
                   <Text style={styles.iconLabel}>Điều Chỉnh Giá Vé</Text>
                 </View>
               </TouchableOpacity>
@@ -133,14 +133,14 @@ export default function HomeScreen() {
                 onPress={() => navigation.navigate("Route")}
               >
                 <View style={styles.iconContent}>
-                  <MaterialIcons name="tram" size={30} color="#000" />
+                  <MaterialIcons name="tram" size={30} color="#1976d2" />
                   <Text style={styles.iconLabel}>Hành Trình</Text>
                 </View>
               </TouchableOpacity>
             </View>
 
             <View style={styles.iconBox}>
-              <MaterialIcons name="chat" size={30} color="#000" />
+              <MaterialIcons name="chat" size={30} color="#1976d2" />
               <Text style={styles.iconLabel}>Nhận xét</Text>
             </View>
 
@@ -156,7 +156,7 @@ export default function HomeScreen() {
                 }}
               >
                 <View style={styles.iconContent}>
-                  <MaterialIcons name="person" size={30} color="#000" />
+                  <MaterialIcons name="person" size={30} color="#1976d2" />
                   <Text style={styles.iconLabel}>Tài Khoản</Text>
                 </View>
               </TouchableOpacity>
@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
   },
   image: {
     width: "100%",
-    height: 400,
+    height: 440,
     resizeMode: "cover",
   },
   imageInstruction: {

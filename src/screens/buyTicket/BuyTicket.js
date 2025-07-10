@@ -12,16 +12,33 @@ import { Picker } from "@react-native-picker/picker";
 import {
   readLinesAPI,
   readStartStationsByLineIdAPI,
-  readStationsAPI,
+  readTicketTypeAPI,
 } from "../../apis";
+import { useSelector } from "react-redux";
+import TicketConfirmModal from "../../components/modal/TicketConfirmModal";
 
-const ticketOptions = [
-  { label: "Vé 1 ngày", price: "40.000 đ" },
-  { label: "Vé 3 ngày", price: "90.000 đ" },
-  { label: "Vé tháng", price: "300.000 đ" },
-];
-
-const studentTicket = { label: "Vé tháng HSSV", price: "150.000 đ" };
+const ticketInfoByType = {
+  "Vé ngày": {
+    hsd: "24h kể từ thời điểm kích hoạt",
+    note: "Tự động kích hoạt sau 30 ngày kể từ ngày mua vé",
+  },
+  "Vé tuần": {
+    hsd: "7 ngày kể từ thời điểm kích hoạt",
+    note: "Tự động kích hoạt sau 60 ngày kể từ ngày mua vé",
+  },
+  "Vé tháng": {
+    hsd: "30 ngày kể từ thời điểm kích hoạt",
+    note: "Tự động kích hoạt sau 180 ngày kể từ ngày mua vé",
+  },
+  "Vé năm": {
+    hsd: "365 ngày kể từ thời điểm kích hoạt",
+    note: "Tự động kích hoạt sau 360 ngày kể từ ngày mua vé",
+  },
+  "Vé tháng học sinh": {
+    hsd: "30 ngày kể từ thời điểm kích hoạt",
+    note: "Tự động kích hoạt sau 180 ngày kể từ ngày mua vé",
+  },
+};
 
 const BuyTicket = () => {
   const navigation = useNavigation();
@@ -30,6 +47,46 @@ const BuyTicket = () => {
   const [selectedLineId, setSelectedLineId] = useState(""); // khai báo để lấy được lineId để mà truyền xuống lấy station.
   const selectedLine = lines.find((line) => line.id === selectedLineId);
   // const sortedStations = [...stations].sort((a, b) => b.id - a.id); // sắp xếp lại id vì BE đặt id sai thứ tự
+  const [ticketTypes, setTicketTypes] = useState([]);
+  const { user, isAuthenticated } = useSelector((state) => state.user);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedTicket, setSelectedTicket] = useState(null);
+
+  const openConfirmModal = (ticket) => {
+    setSelectedTicket(ticket);
+    setModalVisible(true);
+  };
+
+  const closeConfirmModal = () => {
+    setModalVisible(false);
+    setSelectedTicket(null);
+  };
+
+  const fetchTicketTypes = async () => {
+    try {
+      const response = await readTicketTypeAPI();
+      if (!response || !response.result.data) {
+        console.error("No data received from API");
+        return;
+      }
+      setTicketTypes(response.result.data);
+    } catch (error) {
+      console.error("Error fetching ticket types:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchTicketTypes();
+  }, []);
+
+  const featuredTicketNames = ["Vé ngày", "Vé tuần", "Vé tháng", "Vé năm"];
+  const featuredTickets = ticketTypes.filter((ticket) =>
+    featuredTicketNames.includes(ticket.name)
+  );
+
+  const studentTicket = ticketTypes.find(
+    (ticket) => ticket.name === "Vé tháng học sinh"
+  );
 
   const fetchLines = async () => {
     try {
@@ -47,7 +104,6 @@ const BuyTicket = () => {
   const fetchStations = async (lineId) => {
     try {
       const response = await readStartStationsByLineIdAPI(lineId);
-      console.log("API station response:", response.result); // Thêm dòng này
       if (!response || !response.result) {
         console.error("No data received from API");
         return;
@@ -76,72 +132,132 @@ const BuyTicket = () => {
     }
   }, [selectedLineId]);
   return (
-    <ScrollView style={styles.container}>
-      <Header name="Mua vé" />
+    <>
+      <ScrollView style={styles.container}>
+        <Header name="Mua vé" />
 
-      {/* Welcome */}
-      <View style={styles.welcomeBox}>
-        <Text style={styles.welcome}>Chào mừng, Nguyễn Sĩ Vạn Hào!</Text>
-        <Text style={styles.subWelcome}>
-          Bắt đầu các trải nghiệm mới cùng Metro nhé!
-        </Text>
-      </View>
+        {/* Welcome */}
+        <View style={styles.welcomeBox}>
+          <Text style={styles.welcome}>
+            Chào mừng, {user?.username || "Người dùng"}!
+          </Text>
+          <Text style={styles.subWelcome}>
+            Bắt đầu các trải nghiệm mới cùng Metro nhé!
+          </Text>
+        </View>
 
-      <Text style={styles.label}>Chọn tuyến đường:</Text>
-      <View style={styles.pickerWrapper}>
-        <Picker
-          selectedValue={selectedLineId}
-          onValueChange={(itemValue) => setSelectedLineId(itemValue)}
-          style={styles.picker}
-        >
-          {lines.map((line) => (
-            <Picker.Item key={line.id} label={line.name} value={line.id} />
-          ))}
-        </Picker>
-      </View>
-      <Text style={styles.label}>
-        Đã chọn: {selectedLine ? selectedLine.name : "Chưa chọn"}
-      </Text>
-
-      {/* Nổi bật */}
-      <Text style={styles.sectionTitle}>🔥 Nổi bật 🔥</Text>
-      <View style={styles.ticketList}>
-        {ticketOptions.map((item, idx) => (
-          <View key={idx} style={styles.ticketItem}>
-            <Text style={styles.ticketLabel}>{item.label}</Text>
-            <Text style={styles.ticketPrice}>{item.price}</Text>
-          </View>
-        ))}
-      </View>
-
-      {/* Ưu đãi Học sinh Sinh viên */}
-      <Text style={styles.sectionTitle}>Ưu đãi Học sinh 🎒 Sinh viên 🎓</Text>
-      <View style={styles.ticketItem}>
-        <Text style={styles.ticketLabel}>{studentTicket.label}</Text>
-        <Text style={styles.ticketPrice}>{studentTicket.price}</Text>
-      </View>
-
-      {/* Danh sách ga */}
-      <View style={{ marginTop: 24, marginBottom: 50 }}>
-        {stations.map((station) => (
-          <View key={station.id} style={styles.stationRow}>
-            <Text style={styles.stationText}>Đi từ ga {station.name}</Text>
+        {/* Nổi bật */}
+        <Text style={styles.sectionTitle}>🔥 Nổi bật 🔥</Text>
+        <View style={styles.ticketList}>
+          {featuredTickets.map((ticket) => (
             <TouchableOpacity
-              onPress={() =>
-                navigation.navigate("BuyTurnTicket", {
-                  // Truyền params ở đây
-                  lineId: selectedLineId,
-                  stationId: station.id,
-                  stationName: station.name, // Truyền thêm tên ga để hiển thị trên header
-                })
-              }
+              key={ticket.id}
+              onPress={() => openConfirmModal(ticket)}
             >
-              <Text style={styles.detailText}>Xem chi tiết</Text>
+              <View style={styles.ticketItem}>
+                <Text style={styles.ticketLabel}>{ticket.name}</Text>
+                <Text style={styles.ticketPrice}>
+                  {ticket.price.toLocaleString("vi-VN")} đ
+                </Text>
+              </View>
             </TouchableOpacity>
-          </View>
-        ))}
-      </View>
-    </ScrollView>
+          ))}
+        </View>
+
+        {/* Ưu đãi Học sinh Sinh viên */}
+        {studentTicket && (
+          <>
+            <Text style={styles.sectionTitle}>
+              Ưu đãi Học sinh 🎒 Sinh viên 🎓
+            </Text>
+            <TouchableOpacity onPress={() => openConfirmModal(studentTicket)}>
+              <View style={styles.ticketItem}>
+                <Text style={styles.ticketLabel}>{studentTicket.name}</Text>
+                <Text style={styles.ticketPrice}>
+                  {studentTicket.price.toLocaleString("vi-VN")} đ
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </>
+        )}
+
+        <Text style={styles.sectionTitle}>Chọn tuyến đường:</Text>
+        <View style={styles.pickerWrapper}>
+          <Picker
+            selectedValue={selectedLineId}
+            onValueChange={(itemValue) => setSelectedLineId(itemValue)}
+            style={styles.picker}
+          >
+            {lines.map((line) => (
+              <Picker.Item key={line.id} label={line.name} value={line.id} />
+            ))}
+          </Picker>
+        </View>
+        <Text style={styles.label}>
+          Đã chọn: {selectedLine ? selectedLine.name : "Chưa chọn"}
+        </Text>
+
+        {/* Danh sách ga */}
+        <View style={{ marginTop: 24, marginBottom: 50 }}>
+          {stations.map((station) => (
+            <View key={station.id} style={styles.stationRow}>
+              <Text style={styles.stationText}>Đi từ ga {station.name}</Text>
+              <TouchableOpacity
+                onPress={() =>
+                  navigation.navigate("BuyTurnTicket", {
+                    // Truyền params ở đây
+                    lineId: selectedLineId,
+                    stationId: station.id,
+                    stationName: station.name, // Truyền thêm tên ga để hiển thị trên header
+                  })
+                }
+              >
+                <Text style={styles.detailText}>Xem chi tiết</Text>
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
+      </ScrollView>
+
+      {selectedTicket && (
+        <TicketConfirmModal
+          visible={modalVisible}
+          onClose={closeConfirmModal}
+          title={selectedTicket.name}
+          infoRows={
+            ticketInfoByType[selectedTicket.name]
+              ? [
+                  { label: "Loại vé: ", value: selectedTicket.name },
+                  {
+                    label: "HSD: ",
+                    value: ticketInfoByType[selectedTicket.name].hsd,
+                  },
+                  {
+                    label: "Lưu ý: ",
+                    value: ticketInfoByType[selectedTicket.name].note,
+                    isWarning: true,
+                  },
+                  {
+                    label: "Mô tả: ",
+                    value: selectedTicket.description,
+                  },
+                ]
+              : []
+          }
+          price={`${selectedTicket.price.toLocaleString("vi-VN")} đ`}
+          onBuy={() => {
+            setModalVisible(false);
+            navigation.navigate("Invoice", {
+              ticketTypeId: selectedTicket.id,
+              productName: selectedTicket.name,
+              price: `${selectedTicket.price.toLocaleString("vi-VN")} đ`,
+              quantity: 1,
+              isDurationTicket: true,
+            });
+          }}
+        />
+      )}
+    </>
   );
 };
 
