@@ -1,21 +1,21 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   Modal,
-  Pressable,
-  Dimensions,
+  ActivityIndicator,
+  Alert,
   ScrollView,
+  Pressable,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import Header from "../../components/header/Header";
-import { createTicketOrderAPI } from "../../apis";
+import { createTicketOrderAPI, createPaymentAPI } from "../../apis";
+import { WebView } from "react-native-webview";
 
-const { width } = Dimensions.get("window");
-// Hiển thị thông tin vé giống TicketConfirmModal
 const ticketInfoByType = {
   "Vé ngày": {
     hsd: "24h kể từ thời điểm kích hoạt",
@@ -51,89 +51,115 @@ const Invoice = ({ route }) => {
     quantity,
     isDurationTicket,
   } = route.params;
+
   const [paymentModal, setPaymentModal] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState(null);
+  const [loadingPay, setLoadingPay] = useState(false);
+  const [paymentUrl, setPaymentUrl] = useState(null);
+  const [paymentMethodModalVisible, setPaymentMethodModalVisible] =
+    useState(false);
+  const webviewRef = useRef(null);
 
+  // Xử lý thanh toán
   const handlePay = async () => {
+    if (!paymentMethod) {
+      Alert.alert("Vui lòng chọn phương thức thanh toán");
+      return;
+    }
+    setLoadingPay(true);
     try {
-      const data = {
-        ticketTypeId,
-      };
+      // 1. Tạo đơn hàng
+      const data = { ticketTypeId };
       if (!isDurationTicket) {
         data.lineId = lineId;
         data.startStationId = startStationId;
         data.endStationId = endStationId;
       }
-      // Gọi API tạo đơn hàng
       const response = await createTicketOrderAPI(data);
-      console.log("Order responseeeeeeeeeeeeeeee:", response);
-      if (response && response.result) {
-        // Xử lý thành công, ví dụ chuyển trang hoặc thông báo
-        alert("Đặt vé thành công!");
-        navigation.goBack();
+      if (!response?.result?.id) {
+        Alert.alert("Lỗi tạo đơn hàng");
+        setLoadingPay(false);
+        return;
       }
+      const ticketOrderId = response.result.id;
+
+      // 2. Gọi API lấy paymentUrl
+      const url = await createPaymentAPI(ticketOrderId);
+      if (!url) {
+        Alert.alert("Không lấy được link thanh toán VNPay");
+        setLoadingPay(false);
+        return;
+      }
+      setPaymentUrl(url);
+      setPaymentModal(true);
     } catch (error) {
-      console.error("Error processing payment:", error);
-      alert("Thanh toán thất bại, vui lòng thử lại.");
+      Alert.alert("Thanh toán thất bại, vui lòng thử lại.");
+      console.error(error);
+    } finally {
+      setLoadingPay(false);
+    }
+  };
+
+  // Theo dõi URL trong WebView để biết khi nào thanh toán thành công
+  const onWebViewNavigationStateChange = (navState) => {
+    const { url } = navState;
+    // Nếu backend redirect về URL thành công, bạn cần thay đổi điều kiện dưới đây cho đúng
+    if (url.includes("vnpay-callback") || url.includes("payment-success")) {
+      setPaymentModal(false);
+
+      // Alert.alert("Thanh toán thành công!", "", [
+      //   { text: "Xác nhận", onPress: () => navigation.navigate("Home") },
+      // ]);
+      navigation.navigate("PaymentSuccessScreen");
     }
   };
 
   const infoRows = isDurationTicket
     ? [
-        {
-          label: "Loại vé: ",
-          value: productName,
-        },
-        {
-          label: "HSD: ",
-          value: ticketInfoByType[productName]?.hsd || "",
-        },
+        { label: "Loại vé: ", value: productName },
+        { label: "HSD: ", value: ticketInfoByType[productName]?.hsd || "" },
         {
           label: "Lưu ý: ",
           value: ticketInfoByType[productName]?.note || "",
           isWarning: true,
         },
-        {
-          label: "Mô tả: ",
-          value: productName,
-        },
+        { label: "Mô tả: ", value: productName },
       ]
     : [
         { label: "Loại vé: ", value: "Vé lượt" },
         { label: "HSD: ", value: "24h kể từ thời điểm kích hoạt" },
-        {
-          label: "Lưu ý: ",
-          value: "Vé sử dụng một lần",
-          isWarning: true,
-        },
-        {
-          label: "Mô tả: ",
-          value: productName,
-        },
+        { label: "Lưu ý: ", value: "Vé sử dụng một lần", isWarning: true },
+        { label: "Mô tả: ", value: productName },
       ];
 
   return (
     <View style={styles.container}>
       <Header name="Thông tin đơn hàng" />
 
-      {/* Phương thức thanh toán */}
       <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
+        {/* Phương thức thanh toán */}
         <Text style={styles.sectionTitle}>Phương thức thanh toán</Text>
         <TouchableOpacity
           style={styles.paymentBox}
-          onPress={() => setPaymentModal(true)}
+          onPress={() => setPaymentMethodModalVisible(true)}
           activeOpacity={0.8}
         >
           <View style={styles.paymentRow}>
             {paymentMethod ? (
               <View style={styles.vnpayIcon}>
-                <Text style={styles.vnpayIconText}>VN</Text>
+                <Text style={styles.vnpayIconText}>
+                  {paymentMethod === "vnpay"
+                    ? "VN"
+                    : paymentMethod.toUpperCase()}
+                </Text>
               </View>
             ) : (
               <Ionicons name="card-outline" size={24} color="#2D2E82" />
             )}
             <Text style={styles.paymentText}>
-              {paymentMethod ? "Ví VNPay" : "Phương thức thanh toán"}
+              {paymentMethod
+                ? `Phương thức: ${paymentMethod.toUpperCase()}`
+                : "Chọn phương thức thanh toán"}
             </Text>
           </View>
           <Ionicons name="chevron-forward" size={22} color="#2D2E82" />
@@ -163,16 +189,10 @@ const Invoice = ({ route }) => {
             <Text style={styles.infoLabel}>Tổng giá tiền:</Text>
             <Text style={styles.infoValue}>{price}</Text>
           </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Thành tiền:</Text>
-            <Text style={styles.infoValue}>{price}</Text>
-          </View>
         </View>
 
         {/* Thông tin vé */}
-        <Text style={styles.sectionTitle}>
-          Thông tin Vé lượt: {productName}
-        </Text>
+        <Text style={styles.sectionTitle}>Thông tin Vé: {productName}</Text>
         <View style={styles.infoBox}>
           {infoRows.map((row, index) => (
             <View
@@ -203,59 +223,111 @@ const Invoice = ({ route }) => {
             </View>
           ))}
         </View>
+
+        {/* Nút thanh toán */}
+        <TouchableOpacity
+          style={[
+            styles.payButton,
+            { backgroundColor: paymentMethod ? "#2D2E82" : "#B0B0B0" },
+          ]}
+          disabled={!paymentMethod || loadingPay}
+          onPress={handlePay}
+        >
+          {loadingPay ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.payButtonText}>Thanh toán: {price}</Text>
+          )}
+        </TouchableOpacity>
       </ScrollView>
 
-      {/* Nút thanh toán */}
-      <TouchableOpacity
-        style={[
-          styles.payButton,
-          { backgroundColor: paymentMethod ? "#2D2E82" : "#B0B0B0" },
-        ]}
-        disabled={!paymentMethod}
-        onPress={handlePay}
-      >
-        <Text style={styles.payButtonText}>Thanh toán: {price}</Text>
-      </TouchableOpacity>
-
-      {/* Modal chọn phương thức thanh toán */}
+      {/* Modal WebView VNPay */}
+      <Modal visible={paymentModal} animationType="slide" transparent>
+        <View style={{ flex: 1, backgroundColor: "#00000055" }}>
+          <View
+            style={{
+              flex: 1,
+              marginTop: 40,
+              borderRadius: 12,
+              overflow: "hidden",
+              backgroundColor: "#fff",
+            }}
+          >
+            <TouchableOpacity
+              style={{
+                padding: 12,
+                backgroundColor: "#2D2E82",
+                alignItems: "flex-end",
+              }}
+              onPress={() => setPaymentModal(false)}
+            >
+              <Ionicons name="close" size={28} color="#fff" />
+            </TouchableOpacity>
+            {paymentUrl ? (
+              <WebView
+                ref={webviewRef}
+                source={{ uri: paymentUrl }}
+                onNavigationStateChange={onWebViewNavigationStateChange}
+                startInLoadingState
+                renderLoading={() => (
+                  <ActivityIndicator
+                    color="#1976d2"
+                    size="large"
+                    style={{ flex: 1, justifyContent: "center" }}
+                  />
+                )}
+              />
+            ) : (
+              <View
+                style={{
+                  flex: 1,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <ActivityIndicator size="large" color="#1976d2" />
+              </View>
+            )}
+          </View>
+        </View>
+      </Modal>
       <Modal
-        visible={paymentModal}
-        animationType="slide"
+        visible={paymentMethodModalVisible}
         transparent
-        onRequestClose={() => setPaymentModal(false)}
+        animationType="slide"
+        onRequestClose={() => setPaymentMethodModalVisible(false)}
       >
         <Pressable
-          style={styles.modalOverlay}
-          onPress={() => setPaymentModal(false)}
+          style={styles.modalBackground}
+          onPress={() => setPaymentMethodModalVisible(false)}
         >
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Phương thức thanh toán</Text>
-              <TouchableOpacity onPress={() => setPaymentModal(false)}>
-                <Ionicons name="close" size={24} color="#2D2E82" />
-              </TouchableOpacity>
-            </View>
+          <View style={styles.paymentMethodModal}>
+            <Text style={styles.modalTitle}>Chọn phương thức thanh toán</Text>
+
             <TouchableOpacity
-              style={[
-                styles.paymentOption,
-                paymentMethod === "vnpay" && styles.paymentOptionSelected,
-              ]}
+              style={styles.paymentOption}
               onPress={() => {
                 setPaymentMethod("vnpay");
-                setPaymentModal(false);
+                setPaymentMethodModalVisible(false);
               }}
-              activeOpacity={0.8}
             >
               <View style={styles.vnpayIcon}>
                 <Text style={styles.vnpayIconText}>VN</Text>
               </View>
-              <View>
-                <Text style={styles.paymentOptionTitle}>Ví VNPay</Text>
-                <Text style={styles.paymentOptionDesc}>
-                  Thanh toán qua VNPay
-                </Text>
-              </View>
+              <Text style={styles.paymentText}>Ví VNPay</Text>
             </TouchableOpacity>
+
+            {/* Nếu có thêm phương thức khác, thêm tương tự */}
+            {/* <TouchableOpacity
+        style={styles.paymentOption}
+        onPress={() => {
+          setPaymentMethod("paypal");
+          setPaymentMethodModalVisible(false);
+        }}
+      >
+        <Ionicons name="logo-paypal" size={24} color="#003087" />
+        <Text style={styles.paymentText}>PayPal</Text>
+      </TouchableOpacity> */}
           </View>
         </Pressable>
       </Modal>
@@ -264,24 +336,8 @@ const Invoice = ({ route }) => {
 };
 
 const styles = StyleSheet.create({
+  // ...giữ nguyên các style bạn đã dùng...
   container: { flex: 1, backgroundColor: "#ebf7fa" },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    height: 56,
-    paddingHorizontal: 16,
-    borderBottomWidth: 0,
-    justifyContent: "space-between",
-    marginTop: 40,
-    marginBottom: 6,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: "#2D2E82",
-    textAlign: "center",
-    flex: 1,
-  },
   sectionTitle: {
     fontSize: 16,
     fontWeight: "bold",
@@ -344,17 +400,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     marginVertical: 8,
   },
-  termsText: {
-    textAlign: "center",
-    color: "#2D2E82",
-    fontSize: 13,
-    marginBottom: 4,
-    marginTop: 2,
-  },
-  termsLink: {
-    color: "#1976d2",
-    textDecorationLine: "underline",
-  },
   payButton: {
     position: "absolute",
     bottom: 18,
@@ -369,44 +414,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 18,
     fontWeight: "bold",
-  },
-  // Modal styles
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.18)",
-    justifyContent: "flex-end",
-  },
-  modalContent: {
-    backgroundColor: "#fff",
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 20,
-    minHeight: 200,
-  },
-  modalHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 18,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#2D2E82",
-  },
-  paymentOption: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#F8FAFC",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: "#E0E0E0",
-  },
-  paymentOptionSelected: {
-    borderColor: "#2D2E82",
-    backgroundColor: "#E3F0FF",
   },
   vnpayIcon: {
     width: 44,
@@ -423,15 +430,39 @@ const styles = StyleSheet.create({
     fontSize: 18,
     letterSpacing: 1,
   },
-  paymentOptionTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#222",
-    marginBottom: 2,
+  paymentMethodModal: {
+    backgroundColor: "#fff",
+    marginHorizontal: 0,
+    marginTop: "auto", // Đẩy modal xuống dưới cùng màn hình
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    padding: 20,
+    elevation: 10,
+    maxHeight: "50%", // Tùy chỉnh chiều cao modal
   },
-  paymentOptionDesc: {
-    fontSize: 14,
-    color: "#7B7B7B",
+  modalBackground: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "flex-end", // Đẩy overlay xuống dưới cùng
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 16,
+    textAlign: "center",
+    color: "#2D2E82",
+  },
+  paymentOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+    borderWidth: 2,
+    borderColor: "#E0E0E0",
+    borderRadius: 15,
+    paddingHorizontal: 16,
+    
   },
 });
 

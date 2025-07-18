@@ -61,7 +61,7 @@ const News = () => {
               source={
                 item.imageUrl
                   ? { uri: item.imageUrl } // Sửa: Dùng { uri: ... }
-                  : require("../../assets/metro.jpg") // Ảnh dự phòng
+                  : require("../../assets/news.jpg") // Ảnh dự phòng
               }
               style={styles.newsListImage}
             />
