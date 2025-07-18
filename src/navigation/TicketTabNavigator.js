@@ -4,6 +4,7 @@ import BuyTicket from "../screens/buyTicket/BuyTicket";
 import MyTicket from "../screens/myTicket/MyTicket";
 import HistoryTransaction from "../screens/historyTransaction/HistoryTransaction";
 import { MaterialIcons } from "@expo/vector-icons";
+import ProtectedScreen from "./ProtectedScreen";
 
 const Tab = createBottomTabNavigator();
 
@@ -37,7 +38,6 @@ export default function TicketTabNavigator() {
       />
       <Tab.Screen
         name="MyTicket"
-        component={MyTicket}
         options={{
           title: "Vé của tôi",
           headerShown: false,
@@ -49,10 +49,15 @@ export default function TicketTabNavigator() {
             />
           ),
         }}
-      />
+      >
+      {(props) => (
+    <ProtectedScreen navigation={props.navigation}>
+      <MyTicket {...props} />
+    </ProtectedScreen>
+  )}
+      </Tab.Screen>
       <Tab.Screen
         name="HistoryTransaction"
-        component={HistoryTransaction}
         options={{
           title: "Lịch sử",
           headerShown: false,
@@ -60,7 +65,13 @@ export default function TicketTabNavigator() {
             <MaterialIcons name="history" color={color} size={size} />
           ),
         }}
-      />
+      >
+        {(props) => (
+          <ProtectedScreen navigation={props.navigation}>
+            <HistoryTransaction {...props} />
+          </ProtectedScreen>
+        )}
+      </Tab.Screen>
     </Tab.Navigator>
   );
 }

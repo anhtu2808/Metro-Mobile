@@ -25,7 +25,7 @@ const Guideline = () => {
       </View>
     );
   }
-  console.log("aaaaaaaaa", guidelines);
+
   return (
     <ScrollView style={{ flex: 1, backgroundColor: "#ebf7fa" }}>
       <View style={styles.header}>
@@ -45,11 +45,11 @@ const Guideline = () => {
         source={
           guidelines?.imageUrl
             ? { uri: guidelines?.imageUrl }
-            : require("../../assets/metro.jpg") // Ảnh dự phòng
+            : require("../../assets/metro1.jpg") // Ảnh dự phòng
         }
         style={styles.detailImage}
       />
-      <Text style={styles.detailContent}>{guidelines?.summary}</Text>
+      <Text style={styles.detailSummary}>{guidelines?.summary}</Text>
       <View style={{ padding: 16 }}>
         {/* Thông tin tác giả và ngày đăng */}
         <View style={styles.metaInfo}>
@@ -66,31 +66,82 @@ const Guideline = () => {
 };
 
 const styles = StyleSheet.create({
+  // HEADER
   header: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 16,
-    paddingTop: 40,
+    paddingHorizontal: 16,
+    paddingTop: 48,
+    paddingBottom: 16,
     backgroundColor: "#1976d2",
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
-  backText: { color: "#fff", fontSize: 22, marginRight: 12 },
   headerTitle: {
     color: "#fff",
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: "600",
+    marginLeft: 12,
     flex: 1,
-    marginLeft: 10,
   },
-  detailImage: { width: "100%", height: 180, resizeMode: "cover" },
-  detailTitle: {
-    fontWeight: "bold",
+
+  // IMAGE
+  detailImage: {
+    width: "94%",
+    height: 200,
+    resizeMode: "cover",
+    alignSelf: "center",
+    borderRadius: 12,
+    marginTop: 16,
+  },
+
+  // SUMMARY
+  detailSummary: {
     fontSize: 20,
-    marginTop: 8,
-    color: "#1976d2",
+    color: "#444",
+    marginTop: 16,
+    marginHorizontal: 16,
+    lineHeight: 24,
+    fontStyle: "italic",
+    fontWeight: "bold",
   },
-  detailSubtitle: { color: "#555", fontSize: 16, marginVertical: 4 },
-  detailTime: { color: "#1976d2", fontSize: 14, marginBottom: 8 },
-  detailContent: { fontSize: 16, color: "#222", marginTop: 8 },
+
+  // META INFO
+  metaInfo: {
+    marginTop: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: "#e3f2fd",
+    borderRadius: 8,
+    marginHorizontal: 16,
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  authorText: {
+    fontSize: 14,
+    color: "#1976d2",
+    fontWeight: "600",
+  },
+  timeText: {
+    fontSize: 13,
+    color: "#555",
+    fontStyle: "italic",
+  },
+
+  // CONTENT
+  detailContent: {
+    fontSize: 16,
+    color: "#222",
+    lineHeight: 26,
+    fontWeight: "400",
+    paddingHorizontal: 16,
+    marginTop: 12,
+    marginBottom: 32,
+    textAlign: "justify",
+  },
 });
 
 export default Guideline;

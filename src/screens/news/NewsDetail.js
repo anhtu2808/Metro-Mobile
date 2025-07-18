@@ -33,15 +33,19 @@ const NewsDetail = () => {
         </Text>
       </View>
       {/* <Image source={news.imageUrl} style={styles.detailImage} /> */}
-      <Image
+      {/* <Image
         source={
           news.imageUrl
             ? { uri: news.imageUrl }
             : require("../../assets/metro.jpg") // Ảnh dự phòng
         }
         style={styles.detailImage}
+      /> */}
+      <Image
+        source={require("../../assets/news.jpg")}
+        style={styles.detailImage}
       />
-      <Text style={styles.detailContent}>{news?.summary}</Text>
+      <Text style={styles.detailSummary}>{news?.summary}</Text>
       <View style={{ padding: 16 }}>
         {/* Thông tin tác giả và ngày đăng */}
         <View style={styles.metaInfo}>
@@ -59,28 +63,57 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 16,
-    paddingTop: 40,
+    paddingHorizontal: 16,
+    paddingTop: 48,
+    paddingBottom: 16,
     backgroundColor: "#1976d2",
+    elevation: 4,
   },
-  backText: { color: "#fff", fontSize: 22, marginRight: 12 },
   headerTitle: {
     color: "#fff",
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: "600",
+    marginLeft: 12,
     flex: 1,
-    marginLeft: 10,
   },
-  detailImage: { width: "100%", height: 180, resizeMode: "cover" },
-  detailTitle: {
-    fontWeight: "bold",
+  detailImage: {
+    width: "94%",
+    height: 200,
+    resizeMode: "cover",
+    alignSelf: "center",
+    borderRadius: 12,
+    marginTop: 16,
+  },
+  detailSummary: {
     fontSize: 20,
-    marginTop: 8,
-    color: "#1976d2",
+    color: "#444",
+    marginTop: 16,
+    marginHorizontal: 16,
+    lineHeight: 24,
+    fontStyle: "italic",
+    fontWeight: "bold",
   },
-  detailSubtitle: { color: "#555", fontSize: 16, marginVertical: 4 },
-  detailTime: { color: "#1976d2", fontSize: 14, marginBottom: 8 },
-  detailContent: { fontSize: 16, color: "#222", marginTop: 8 },
+  metaInfo: {
+    marginTop: 12,
+    marginBottom: 16,
+  },
+  authorText: {
+    fontSize: 14,
+    color: "#1976d2",
+    fontWeight: "600",
+    marginBottom: 4,
+  },
+  timeText: {
+    fontSize: 13,
+    color: "#555",
+  },
+  detailContent: {
+    fontSize: 16,
+    color: "#222",
+    lineHeight: 26,
+    fontWeight: "400",
+    textAlign: "justify",
+  },
 });
 
 export default NewsDetail;

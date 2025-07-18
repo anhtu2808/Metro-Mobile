@@ -57,9 +57,11 @@ function Login() {
       .then(async (response) => {
         // Lưu token vào AsyncStorage nếu cần
         await AsyncStorage.setItem("accessToken", response.result.token);
-        // Gọi tiếp API lấy thông tin user
 
+        // Gọi tiếp API lấy thông tin user
         const userInfo = await readInfoAPI();
+        await AsyncStorage.setItem("user", JSON.stringify(userInfo.result));
+
         // Lưu user vào Redux
         dispatch(
           loginSuccess({
@@ -68,7 +70,7 @@ function Login() {
           })
         );
         navigation.navigate("Home");
-        Alert.alert("Đăng nhập thành công", `Chào mừng ${username}!`);
+        // Alert.alert("Đăng nhập thành công", `Chào mừng ${username}!`);
       })
       .catch((error) => {
         console.log("Login error:", error?.response?.data || error);

@@ -5,17 +5,37 @@ import {
   StyleSheet,
   FlatList,
   ActivityIndicator,
+  Modal,
+  TouchableOpacity,
 } from "react-native";
 import Header from "../../components/header/Header";
 import { useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
-import { getTicketOrdersAPI } from "../../apis";
+import { getTicketOrdersAPI, readTicketOrderByIdAPI } from "../../apis";
 
 const Expired = () => {
   const { user } = useSelector((state) => state.user);
   const navigation = useNavigation();
   const [expiredTickets, setExpiredTickets] = useState([]);
   const [loading, setLoading] = useState(false);
+const [modalVisible, setModalVisible] = useState(false);
+const [selectedTicket, setSelectedTicket] = useState(null);
+const [loadingDetail, setLoadingDetail] = useState(false);
+
+const handleTicketPress = async (ticketId) => {
+  setLoadingDetail(true);
+  try {
+    const data = await readTicketOrderByIdAPI(ticketId);
+    if (data && data.result) {
+      setSelectedTicket(data.result);
+      setModalVisible(true);
+    }
+  } catch (error) {
+    Alert.alert("Lỗi", "Không lấy được thông tin vé");
+  } finally {
+    setLoadingDetail(false);
+  }
+};
 
   useEffect(() => {
     const fetchExpiredTickets = async () => {
@@ -44,13 +64,28 @@ const Expired = () => {
   }, [user?.id]);
 
   const renderTicketItem = ({ item }) => (
-    <View style={styles.ticketItem}>
-      <Text style={styles.ticketCode}>Mã vé: {item.ticketCode || "N/A"}</Text>
-      <Text>{item.price?.toLocaleString("vi-VN")} đ</Text>
-      <Text>{new Date(item.purchaseDate).toLocaleDateString()}</Text>
-      <Text style={styles.status}>{item.status}</Text>
+  <TouchableOpacity
+    style={styles.ticketItem}
+    onPress={() => handleTicketPress(item.id)}
+  >
+    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <Text style={styles.ticketTitle}>
+        {item.ticketType?.name || "Vé 1 ngày"}
+      </Text>
+      <Text style={styles.ticketCancelled}>Đã hết hạn</Text>
     </View>
-  );
+
+    <Text style={styles.ticketTime}>
+      {new Date(item.purchaseDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} {new Date(item.purchaseDate).toLocaleDateString()}
+    </Text>
+
+    <Text style={styles.ticketPrice}>
+      {item.price?.toLocaleString("vi-VN")} đ
+    </Text>
+  </TouchableOpacity>
+);
+
+
 
   return (
     <View style={styles.container}>
@@ -76,6 +111,53 @@ const Expired = () => {
           contentContainerStyle={{ paddingHorizontal: 16 }}
         />
       )}
+
+      <Modal
+  visible={modalVisible}
+  animationType="slide"
+  transparent={true}
+  onRequestClose={() => setModalVisible(false)}
+>
+  <View style={styles.modalOverlay}>
+    <View style={styles.modalContent}>
+      {loadingDetail ? (
+        <ActivityIndicator size="large" color="#1976d2" />
+      ) : selectedTicket ? (
+        <View style={styles.infoContainer}>
+          <Text style={styles.infoLabel}>
+            Loại: {selectedTicket.ticketType.name}
+          </Text>
+          <Text style={styles.infoLabel}>
+            Mã vé: {selectedTicket.ticketCode}
+          </Text>
+          <Text style={styles.infoLabel}>
+            Giá: {selectedTicket.price?.toLocaleString("vi-VN")} đ
+          </Text>
+          <Text style={styles.infoLabel}>
+            Mô tả: {selectedTicket.ticketType.description}
+          </Text>
+          <Text style={styles.infoLabel}>
+            Ngày mua: {" "}
+            {new Date(selectedTicket.purchaseDate).toLocaleDateString()}
+          </Text>
+          <Text style={styles.infoLabel}>
+            Hiệu lực đến: {" "}
+            {selectedTicket.validUntil
+              ? new Date(selectedTicket.validUntil).toLocaleDateString()
+              : "Chưa xác định"}
+          </Text>
+
+          <TouchableOpacity
+            style={styles.closeBtn}
+            onPress={() => setModalVisible(false)}
+          >
+            <Text style={{ color: "#1976d2", fontWeight: "bold" }}>Đóng</Text>
+          </TouchableOpacity>
+        </View>
+      ) : null}
+    </View>
+  </View>
+</Modal>
     </View>
   );
 };
@@ -97,18 +179,48 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   ticketItem: {
-    backgroundColor: "#fff",
-    borderRadius: 18,
-    paddingVertical: 20,
-    paddingHorizontal: 24,
-    marginVertical: 10,
-    marginHorizontal: 20,
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 6 },
-    shadowRadius: 12,
-  },
+  backgroundColor: "#fff",
+  borderRadius: 16,
+  padding: 16,
+  marginVertical: 10,
+  marginHorizontal: 8,
+  elevation: 3,
+  shadowColor: "#000",
+  shadowOpacity: 0.07,
+  shadowRadius: 8,
+  shadowOffset: { width: 0, height: 2 },
+  position: "relative",
+  minHeight: 90,
+},
+ticketTitle: {
+  fontWeight: "bold",
+  fontSize: 15,
+  color: "#19191c",
+},
+ticketCancelled: {
+  backgroundColor: "#fad6d4",
+  color: "#eb5864",
+  fontWeight: "500",
+  borderRadius: 12,
+  overflow: "hidden",
+  paddingHorizontal: 10,
+  paddingVertical: 2,
+  fontSize: 13,
+},
+ticketTime: {
+  fontSize: 13,
+  color: "#8b909a",
+  marginTop: 6,
+},
+
+ticketPrice: {
+  position: 'absolute',
+  bottom: 18,
+  right: 16,
+  fontWeight: 'bold',
+  fontSize: 16,
+  color: "#19191c",
+},
   ticketCode: {
     fontWeight: "700",
     fontSize: 18,
@@ -148,6 +260,32 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     textAlign: "center",
   },
+  modalOverlay: {
+  flex: 1,
+  backgroundColor: "rgba(0,0,0,0.5)",
+  justifyContent: "center",
+  alignItems: "center",
+},
+modalContent: {
+  width: "90%",
+  backgroundColor: "#fff",
+  borderRadius: 16,
+  padding: 20,
+  elevation: 10,
+},
+infoContainer: {
+  width: "100%",
+},
+infoLabel: {
+  fontSize: 16,
+  marginBottom: 8,
+  color: "#333",
+},
+closeBtn: {
+  marginTop: 20,
+  alignSelf: "center",
+},
+
 });
 
 export default Expired;

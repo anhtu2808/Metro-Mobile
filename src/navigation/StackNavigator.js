@@ -14,7 +14,8 @@ import News from "../screens/news/News";
 import NewsDetail from "../screens/news/NewsDetail";
 import MetroMapScreen from "../screens/route/Route";
 import Guideline from "../screens/guideline/Guideline";
-
+import ProtectedScreen from "./ProtectedScreen";
+import PaymentSuccessScreen from "../components/paymentSuccess/PaymentSuccessScreen ";
 const Stack = createNativeStackNavigator();
 
 function StackNavigator() {
@@ -62,9 +63,14 @@ function StackNavigator() {
       />
       <Stack.Screen
         name="Invoice"
-        component={Invoice}
         options={{ headerShown: false }}
-      />
+      >
+      {(props) => (
+        <ProtectedScreen navigation={props.navigation}>
+          <Invoice {...props} />
+        </ProtectedScreen>
+      )}
+      </Stack.Screen>
       <Stack.Screen
         name="AdjustTicket"
         component={AdjustTicket}
@@ -88,6 +94,11 @@ function StackNavigator() {
       <Stack.Screen
         name="Guideline"
         component={Guideline}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="PaymentSuccessScreen"
+        component={PaymentSuccessScreen}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

@@ -53,8 +53,12 @@ export default function HomeScreen() {
         onPress={() => navigation.navigate("Guideline", { guidelines: item })}
       >
         {/* 4. Sửa lại Image source để dùng URL từ API */}
-        <Image
+        {/* <Image
           source={{ uri: item.imageUrl }} // Giả sử API trả về trường 'imageUrl'
+          style={styles.imageInstruction}
+        /> */}
+        <Image
+          source={require("../../assets/metro1.jpg")} // Giả sử API trả về trường 'imageUrl'
           style={styles.imageInstruction}
         />
         <Text style={styles.guidelineTitle}>{item.title}</Text>
@@ -194,7 +198,11 @@ export default function HomeScreen() {
                   navigation.navigate("NewsDetail", { newsItem: item })
                 }
               >
-                <Image source={item.imageUrl} style={styles.newsImage} />
+                {/* <Image source={item.imageUrl} style={styles.newsImage} /> */}
+                <Image
+                  source={require("../../assets/news.jpg")}
+                  style={styles.newsImage}
+                />
                 <Text style={styles.newsTitle} numberOfLines={2}>
                   {item.title}
                 </Text>

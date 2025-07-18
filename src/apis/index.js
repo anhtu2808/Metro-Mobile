@@ -1,7 +1,6 @@
 import api from "../services/api.js";
-import axios from "axios";
-import { API_ROOT } from "../utils/constants.js";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { INTERNAL_SECRET } from "../utils/constants.js";
 
 //USER SERVICE
 //Login & Logout API
@@ -31,6 +30,11 @@ export const createRegisterAPI = async (data) => {
 //User API
 export const readInfoAPI = async () => {
   const res = await api.get("/v1/users/my-info");
+  return res.data;
+};
+
+export const updateUserAPI = async (userId, data) => {
+  const res = await api.put(`/v1/users/${userId}`, data);
   return res.data;
 };
 
@@ -91,8 +95,28 @@ export const createTicketOrderAPI = async (data) => {
   return res.data;
 };
 
+export const updateStatusActiveTicketOrderAPI = async (orderId, status) => {
+  const token = await AsyncStorage.getItem("accessToken");
+  const res = await api.put(
+    `/v1/ticket-orders/${orderId}/status?status=${status}`,
+    {},
+    {
+      headers: {
+        "X-INTERNAL-SECRET": INTERNAL_SECRET,
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  console.log("API response status:", res.status);
+  return res.status; // Trả về status HTTP
+};
+
+export const readTicketOrderByIdAPI = async (orderId) => {
+  const res = await api.get(`/v1/ticket-orders/${orderId}`);
+  return res.data;
+};
+
 //ticket-order by dynamic parameters
-// ORDER SERVICE
 export const getTicketOrdersAPI = async (params) => {
   const queryParams = new URLSearchParams();
 
@@ -118,4 +142,12 @@ export const getTicketOrdersAPI = async (params) => {
 export const readTicketTypeAPI = async () => {
   const res = await api.get("/v1/ticket-types?page=1&size=10&sort=id");
   return res.data;
+};
+
+//PAYMENT SERVICE
+export const createPaymentAPI = async (orderId) => {
+  const res = await api.get(
+    `/v1/payments/vn-pay?ticketOrderId=${orderId}&bankCode=NCB`
+  );
+  return res.data.data.paymentUrl;
 };
