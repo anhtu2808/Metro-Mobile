@@ -39,3 +39,23 @@ export const handleUpdateUser = async ({
     return false;
   }
 };
+
+export const uploadImageToServer = async (uri) => {
+  const formData = new FormData();
+  formData.append("file", {
+    uri,
+    name: "avatar.jpg",
+    type: "image/jpeg",
+  });
+  const token = await AsyncStorage.getItem("accessToken");
+  const uploadRes = await api.post("/v1/uploads/users", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (uploadRes?.data?.code === 200 && uploadRes.data.result) {
+    return uploadRes.data.result;
+  }
+  throw new Error("Upload ảnh thất bại");
+};

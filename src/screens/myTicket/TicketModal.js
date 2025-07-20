@@ -18,7 +18,7 @@ import QRCode from "react-native-qrcode-svg";
 
 const QR_REFRESH_INTERVAL = 60; // giây
 
-const TicketModal = ({ visible, onClose, ticketId, onActivated }) => {
+const TicketModal = ({ visible, onClose, ticketId, onActivated, ticketInfo }) => {
   const [tab, setTab] = useState("QR");
   const [ticket, setTicket] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -85,7 +85,7 @@ const TicketModal = ({ visible, onClose, ticketId, onActivated }) => {
         Alert.alert("Lỗi", "Kích hoạt vé thất bại!");
       }
     } catch (e) {
-      console.error("Lỗi kích hoạt vé:", e.response?.data || e.message || e);
+      console.log("Lỗi kích hoạt vé:", e.response?.data || e.message || e);
       Alert.alert("Lỗi", "Kích hoạt vé thất bại!");
     } finally {
       setLoading(false);
@@ -142,7 +142,7 @@ const TicketModal = ({ visible, onClose, ticketId, onActivated }) => {
                 style={styles.logo}
                 resizeMode="contain"
               />
-              {ticket.status === "ACTIVE" ? (
+              {(ticket.status === "ACTIVE" || ticket.status === "USING") ? (
                 <>
                   <View style={styles.qrCodeBox}>
                     <QRCode
@@ -185,7 +185,17 @@ const TicketModal = ({ visible, onClose, ticketId, onActivated }) => {
           {/* Info Tab */}
           {tab === "INFO" && (
             <View style={styles.infoContainer}>
-            <Text style={styles.infoLabel}>Loại: {ticket.ticketType.name}</Text>
+            {ticket.ticketType?.name === "Vé lượt" ? (
+            <>
+                <Text style={styles.infoLabel}>
+                  Đi từ: {ticket.startStation?.name}
+                </Text>
+                <Text style={styles.infoLabel}>
+                  Đến: {ticket.endStation?.name}
+                </Text>
+            </>
+            ) : (<Text style={styles.infoLabel}>Loại: {ticket.ticketType.name}</Text>)
+            }
               <Text style={styles.infoLabel}>Mã vé: {ticket.ticketCode}</Text>
               <Text style={styles.infoLabel}>
                 Giá: {ticket.price?.toLocaleString("vi-VN")} đ

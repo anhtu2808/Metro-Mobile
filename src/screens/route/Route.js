@@ -5,6 +5,8 @@ import {
   StyleSheet,
   Dimensions,
   TouchableOpacity,
+  Image,
+  ScrollView,
 } from "react-native";
 import MapView, { Marker, Polyline } from "react-native-maps";
 import { Picker } from "@react-native-picker/picker";
@@ -37,7 +39,7 @@ export default function MetroMapScreen() {
       }
       setLines(response.result.data);
     } catch (error) {
-      console.error("Error fetching stations:", error);
+      console.log("Error fetching stations:", error);
     }
   };
 
@@ -45,12 +47,12 @@ export default function MetroMapScreen() {
     try {
       const response = await readStartStationsByLineIdAPI(lineId);
       if (!response || !response.result) {
-        console.error("No data received from API");
+        console.log("No data received from API");
         return;
       }
       setStations(response.result);
     } catch (error) {
-      console.error("Error fetching stations:", error);
+      console.log("Error fetching stations:", error);
     }
   };
 
@@ -58,12 +60,12 @@ export default function MetroMapScreen() {
     try {
       const response = await readBusByStationAPI(stationId);
       if (!response || !response.result.data) {
-        console.error("No data received from API");
+        console.log("No data received from API");
         return;
       }
       setBuses(response.result.data);
     } catch (error) {
-      console.error("Error fetching buses:", error);
+      console.log("Error fetching buses:", error);
     }
   };
 
@@ -106,7 +108,6 @@ export default function MetroMapScreen() {
   const handleSelectStation = (station) => {
     setSelectedStation(station);
     fetchBusByStationId(station.id);
-    console.log("station iddddddddddddddddddddđ", station.id);
   };
 
   return (
@@ -167,24 +168,60 @@ export default function MetroMapScreen() {
 
       {/* Bảng thông tin ga khi chọn */}
       {selectedStation && (
-        <View style={styles.bottomSheet}>
-          <Text style={styles.stationName}>{selectedStation.name}</Text>
-          {buses.length > 0 ? (
-            <View style={{ marginTop: 8 }}>
-              <Text style={{ fontWeight: "bold" }}>Các tuyến bus:</Text>
-              {buses.map((bus) => (
-                <Text key={bus.id} style={{ marginTop: 4 }}>
-                  {bus.name} {bus.code ? `(${bus.code})` : ""}
-                </Text>
-              ))}
-            </View>
-          ) : (
-            <Text style={{ marginTop: 8, fontStyle: "italic" }}>
-              Không có tuyến bus nào.
-            </Text>
-          )}
-        </View>
+  <View style={styles.bottomSheet}>
+    <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
+      <Text style={styles.stationName}>{selectedStation.name}</Text>
+
+      {selectedStation.imageUrl ? (
+        <Image
+          source={{ uri: selectedStation.imageUrl }}
+          style={styles.stationImage}
+          resizeMode="cover"
+        />
+      ) : (
+        <Text style={{ fontStyle: "italic", color: "#999", marginBottom: 16 }}>
+          Không có hình ảnh cho ga này
+        </Text>
       )}
+
+      <Text style={{ fontSize: 14, color: "#444", marginBottom: 6 }}>
+        Địa chỉ: {selectedStation.address || "Chưa có thông tin"}
+      </Text>
+      <Text style={{ fontSize: 14, color: "#444", marginBottom: 12 }}>
+        Mã trạm: {selectedStation.stationCode || "Chưa có thông tin"}
+      </Text>
+
+      {buses.length > 0 ? (
+        <View style={{ marginTop: 8 }}>
+          <Text style={{ fontWeight: "bold", fontSize: 16, marginBottom: 8 }}>
+            Các tuyến bus:
+          </Text>
+          {buses.map((bus) => (
+            <View key={bus.id} style={styles.busCard}>
+              <Text style={styles.busCode}>{bus.busCode}</Text>
+              {bus.startLocation && bus.endLocation && (
+                <Text style={styles.busInfo}>
+                  {bus.startLocation} ⇄ {bus.endLocation}
+                </Text>
+              )}
+              {typeof bus.distanceToStation === "number" && (
+                <Text style={styles.busInfo}>Cách ga: {bus.distanceToStation}m</Text>
+              )}
+              {bus.headwayMinutes && (
+                <Text style={styles.busInfo}>{bus.headwayMinutes} phút/chuyến</Text>
+              )}
+            </View>
+          ))}
+        </View>
+      ) : (
+        <Text style={{ marginTop: 8, fontStyle: "italic" }}>
+          Không có tuyến bus nào.
+        </Text>
+      )}
+    </ScrollView>
+  </View>
+)}
+
     </View>
   );
 }
@@ -211,20 +248,28 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   bottomSheet: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: "#fff",
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    padding: 16,
-    elevation: 10,
-  },
-  stationName: {
-    fontSize: 18,
-    fontWeight: "bold",
-  },
+  position: "absolute",
+  bottom: 0,
+  left: 0,
+  right: 0,
+  maxHeight: "30%", // giới hạn chiều cao tối đa
+  backgroundColor: "#f9f9f9",
+  borderTopLeftRadius: 20,
+  borderTopRightRadius: 20,
+  paddingVertical: 24,
+  paddingHorizontal: 20,
+  elevation: 12,
+  shadowColor: "#000",
+  shadowOpacity: 0.2,
+  shadowRadius: 10,
+  shadowOffset: { width: 0, height: -5 },
+},
+ stationName: {
+  fontSize: 20,
+  fontWeight: "700",
+  color: "#111",
+  marginBottom: 12,
+},
   circleMarker: {
     width: 18,
     height: 18,
@@ -238,4 +283,34 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
   },
+  stationImage: {
+  width: "100%",
+  height: 180,
+  borderRadius: 12,
+  marginBottom: 16,
+},
+// style cho card bus
+busCard: {
+  backgroundColor: "#fff",
+  padding: 12,
+  borderRadius: 12,
+  marginBottom: 10,
+  elevation: 3, // shadow trên Android
+  shadowColor: "#000",
+  shadowOpacity: 0.1,
+  shadowRadius: 6,
+  shadowOffset: { width: 0, height: 3 }, // shadow trên iOS
+},
+busCode: {
+  fontWeight: "bold",
+  fontSize: 16,
+  marginBottom: 6,
+  color: "#1976d2",
+},
+busInfo: {
+  fontSize: 14,
+  color: "#444",
+  marginBottom: 2,
+},
+
 });

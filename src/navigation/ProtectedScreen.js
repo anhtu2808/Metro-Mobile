@@ -9,7 +9,7 @@ const ProtectedScreen = ({ children, navigation }) => {
     if (!isAuthenticated) {
       navigation.replace("Login");
       Alert.alert(
-        "Biến", "Đăng nhập đi thằng khốn nạn không có quyền truy cập!")
+        "Xin lỗi", "Hãy đăng nhập!")
     }
   }, [isAuthenticated]);
 

@@ -15,6 +15,7 @@ import { useNavigation } from "@react-navigation/native";
 import Header from "../../components/header/Header";
 import { createTicketOrderAPI, createPaymentAPI } from "../../apis";
 import { WebView } from "react-native-webview";
+import { useSelector } from "react-redux";
 
 const ticketInfoByType = {
   "Vé ngày": {
@@ -51,7 +52,7 @@ const Invoice = ({ route }) => {
     quantity,
     isDurationTicket,
   } = route.params;
-
+  const { user } = useSelector(state => state.user);
   const [paymentModal, setPaymentModal] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState(null);
   const [loadingPay, setLoadingPay] = useState(false);
@@ -59,9 +60,16 @@ const Invoice = ({ route }) => {
   const [paymentMethodModalVisible, setPaymentMethodModalVisible] =
     useState(false);
   const webviewRef = useRef(null);
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
 
   // Xử lý thanh toán
   const handlePay = async () => {
+     // Nếu vé là vé HSSV
+  if (productName === "Vé tháng học sinh" && !user?.isStudentVerified) {
+    // Hiện modal cảnh báo quyền hạn
+    setShowVerificationModal(true);
+    return;
+  }
     if (!paymentMethod) {
       Alert.alert("Vui lòng chọn phương thức thanh toán");
       return;
@@ -94,7 +102,7 @@ const Invoice = ({ route }) => {
       setPaymentModal(true);
     } catch (error) {
       Alert.alert("Thanh toán thất bại, vui lòng thử lại.");
-      console.error(error);
+      console.log(error);
     } finally {
       setLoadingPay(false);
     }
@@ -331,6 +339,40 @@ const Invoice = ({ route }) => {
           </View>
         </Pressable>
       </Modal>
+
+      <Modal visible={showVerificationModal} transparent animationType="fade">
+  <View style={styles.modalOverlay}>
+    <View style={styles.verificationModal}>
+      <Text style={styles.modalTitle}>
+        Bạn chưa có quyền mua vé học sinh sinh viên
+      </Text>
+      <Text style={styles.modalMessage}>
+        Tài khoản của bạn chưa được xác minh bởi admin. Vui lòng xác minh để tiếp tục.
+      </Text>
+      <View style={styles.modalButtons}>
+        <TouchableOpacity
+          onPress={() => {
+            setShowVerificationModal(false);
+            navigation.navigate("Home");
+          }}
+          style={[styles.modalBtn, { backgroundColor: "#ccc" }]}
+        >
+          <Text>Về trang chủ</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => {
+            setShowVerificationModal(false);
+            navigation.navigate("Verification"); // Trang xác minh
+          }}
+          style={[styles.modalBtn, { backgroundColor: "#2D2E82" }]}
+        >
+          <Text style={{ color: "#fff" }}>Xác minh</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  </View>
+</Modal>
+
     </View>
   );
 };
@@ -462,7 +504,43 @@ const styles = StyleSheet.create({
     borderColor: "#E0E0E0",
     borderRadius: 15,
     paddingHorizontal: 16,
-    
+  },
+  // modal warning
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  verificationModal: {
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 20,
+    width: "85%",
+    alignItems: "center",
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 12,
+    textAlign: "center",
+  },
+  modalMessage: {
+    fontSize: 15,
+    marginBottom: 20,
+    textAlign: "center",
+  },
+  modalButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+  },
+  modalBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    marginHorizontal: 6,
+    borderRadius: 6,
+    alignItems: "center",
   },
 });
 

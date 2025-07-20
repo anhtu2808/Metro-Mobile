@@ -16,6 +16,7 @@ const StatusTicket = {
   INACTIVE: "INACTIVE",
   ACTIVE: "ACTIVE",
   UNPAID: "UNPAID",
+  USING: "USING"
 };
 
 const MyTicket = () => {
@@ -27,30 +28,57 @@ const MyTicket = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedTicketId, setSelectedTicketId] = useState(null);
 
+  // const fetchTicketOrders = async (tab) => {
+  //   if (!user?.id) return;
+  //   setLoading(true);
+  //   try {
+  //     const data = {
+  //       page: 1,
+  //       size: 10,
+  //       userId: user.id,
+  //       status:
+  //         selectedTab === "using" ? StatusTicket.ACTIVE : StatusTicket.INACTIVE,
+  //     };
+  //     const response = await getTicketOrdersAPI(data);
+  //     if (response && response.result.data) {
+  //       setTicketOrders(response.result.data);
+  //     } else {
+  //       setTicketOrders([]);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching ticket orders:", error);
+  //     setTicketOrders([]);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   const fetchTicketOrders = async (tab) => {
-    if (!user?.id) return;
-    setLoading(true);
-    try {
-      const data = {
-        page: 1,
-        size: 10,
-        userId: user.id,
-        status:
-          selectedTab === "using" ? StatusTicket.ACTIVE : StatusTicket.INACTIVE,
-      };
-      const response = await getTicketOrdersAPI(data);
-      if (response && response.result.data) {
-        setTicketOrders(response.result.data);
-      } else {
-        setTicketOrders([]);
-      }
-    } catch (error) {
-      console.error("Error fetching ticket orders:", error);
-      setTicketOrders([]);
-    } finally {
-      setLoading(false);
+  if (!user?.id) return;
+  setLoading(true);
+  try {
+    let data = {
+      page: 1,
+      size: 10,
+      userId: user.id,
+      // Không truyền status trường hợp selectedTab === "using"
+    };
+    if (selectedTab !== "using") data.status = "INACTIVE";
+
+    const response = await getTicketOrdersAPI(data);
+    let list = response?.result?.data || [];
+    if (selectedTab === "using") {
+      list = list.filter(x => x.status === "ACTIVE" || x.status === "USING"); // hiện ra danh sách vé active và using
     }
-  };
+    setTicketOrders(list);
+  } catch (error) {
+    console.log("Error fetching ticket orders:", error);
+    setTicketOrders([]);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   useEffect(() => {
     fetchTicketOrders(selectedTab);
@@ -61,8 +89,12 @@ const MyTicket = () => {
   let statusText = "";
   let statusStyle = {};
   if (item.status === StatusTicket.ACTIVE) {
-    statusText = "Đang sử dụng";
+    statusText = "Đã kích hoạt";
     statusStyle = styles.statusActive;
+  }
+  else if (item.status === StatusTicket.USING) {
+    statusText = "Đang sử dụng";
+    statusStyle = styles.statusUsing;
   }
   else if (item.status === StatusTicket.INACTIVE) {
     statusText = "Chưa sử dụng";
@@ -100,7 +132,8 @@ const MyTicket = () => {
   const handleTicketPress = (item) => {
     if (
       item.status === StatusTicket.INACTIVE ||
-      item.status === StatusTicket.ACTIVE
+      item.status === StatusTicket.ACTIVE   ||
+      item.status === StatusTicket.USING
     ) {
       setSelectedTicketId(item.id);
       setModalVisible(true);
@@ -184,6 +217,7 @@ const MyTicket = () => {
         visible={modalVisible}
         onClose={handleModalClose}
         ticketId={selectedTicketId}
+        ticketInfo={ticketOrders.find(item => item.id === selectedTicketId)}
         onActivated={handleModalClose}
       />
     </View>
@@ -301,13 +335,17 @@ const styles = StyleSheet.create({
   loadingContainer: {
     marginTop: 30,
   },
-  statusActive: {
+  statusUsing: {
   backgroundColor: "#e8f5e9",
   color: "#388e3c",
 },
-statusInactive: {
+statusActive: {
   backgroundColor: "#e3f2fd",
   color: "#1976d2",
+},
+statusInactive: {
+  backgroundColor: "#dedfe0",
+  color: "#97999c",
 },
 statusCancelled: {
   backgroundColor: "#fedbe2",
