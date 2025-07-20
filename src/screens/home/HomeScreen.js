@@ -28,14 +28,14 @@ export default function HomeScreen() {
       try {
         // Fetch News
         const newsResponse = await readContentAPI("NEWS");
-        if (newsResponse && newsResponse.data) {
-          setNews(newsResponse.data);
+        if (newsResponse && newsResponse.result.data) {
+          setNews(newsResponse.result.data);
         }
 
         // Fetch Guidelines
         const guidelineResponse = await readContentAPI("GUIDELINE");
-        if (guidelineResponse && guidelineResponse.data) {
-          setGuidelines(guidelineResponse.data);
+        if (guidelineResponse && guidelineResponse.result.data) {
+          setGuidelines(guidelineResponse.result.data);
         }
       } catch (error) {
         console.log("Error fetching contents:", error);

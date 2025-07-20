@@ -18,12 +18,12 @@ const ResetPassword = () => {
   const route = useRoute();
   const { email } = route.params || {}; // Lấy email từ params
 
-  const [otp, setOtp] = useState("");
+  const [otpCode, setOtpCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleResetPassword = async () => {
-    if (!otp.trim() || !newPassword) {
+    if (!otpCode.trim() || !newPassword) {
       Alert.alert("Lỗi", "Vui lòng nhập đầy đủ OTP và mật khẩu mới.");
       return;
     }
@@ -31,7 +31,7 @@ const ResetPassword = () => {
     try {
       const response = await createResetPasswordAPI({
         email,
-        otp,
+        otpCode,
         newPassword,
       });
       if (response?.code === 200) {
@@ -67,8 +67,8 @@ const ResetPassword = () => {
         style={styles.input}
         placeholder="Nhập mã OTP"
         keyboardType="numeric"
-        value={otp}
-        onChangeText={setOtp}
+        value={otpCode}
+        onChangeText={setOtpCode}
         editable={!loading}
       />
       <TextInput
