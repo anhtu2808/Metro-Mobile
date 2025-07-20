@@ -61,7 +61,7 @@ function Login() {
         // Gọi tiếp API lấy thông tin user
         const userInfo = await readInfoAPI();
         await AsyncStorage.setItem("user", JSON.stringify(userInfo.result));
-
+        console.log(userInfo);
         // Lưu user vào Redux
         dispatch(
           loginSuccess({
@@ -159,16 +159,19 @@ function Login() {
           <Text style={styles.loginButtonText}>Đăng Nhập</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={styles.loginGoogleButton}
           onPress={() => promptAsync()} // Sử dụng promptAsync để đăng nhập Google
           disabled={!request}
         >
           <Text style={styles.loginGoogleButtonText}>Đăng Nhập Google</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         <TouchableOpacity onPress={() => navigation.navigate("Register")}>
           <Text style={styles.register}>Đăng ký</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate("ForgotPassword")}>
+          <Text style={styles.register}>Quên mật khẩu?</Text>
         </TouchableOpacity>
       </View>
     </View>

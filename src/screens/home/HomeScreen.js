@@ -28,17 +28,17 @@ export default function HomeScreen() {
       try {
         // Fetch News
         const newsResponse = await readContentAPI("NEWS");
-        if (newsResponse && newsResponse.data) {
-          setNews(newsResponse.data);
+        if (newsResponse && newsResponse.result.data) {
+          setNews(newsResponse.result.data);
         }
 
         // Fetch Guidelines
         const guidelineResponse = await readContentAPI("GUIDELINE");
-        if (guidelineResponse && guidelineResponse.data) {
-          setGuidelines(guidelineResponse.data);
+        if (guidelineResponse && guidelineResponse.result.data) {
+          setGuidelines(guidelineResponse.result.data);
         }
       } catch (error) {
-        console.error("Error fetching contents:", error);
+        console.log("Error fetching contents:", error);
       } finally {
         setLoading(false); // Dừng loading sau khi fetch xong
       }
@@ -144,11 +144,6 @@ export default function HomeScreen() {
             </View>
 
             <View style={styles.iconBox}>
-              <MaterialIcons name="chat" size={30} color="#1976d2" />
-              <Text style={styles.iconLabel}>Nhận xét</Text>
-            </View>
-
-            <View style={styles.iconBox}>
               <TouchableOpacity
                 style={styles.iconButton}
                 onPress={() => {
@@ -165,6 +160,11 @@ export default function HomeScreen() {
                 </View>
               </TouchableOpacity>
             </View>
+
+            {/* <View style={styles.iconBox}>
+              <MaterialIcons name="chat" size={30} color="#1976d2" />
+              <Text style={styles.iconLabel}>Nhận xét</Text>
+            </View> */}
           </View>
 
           {/* Hướng dẫn sử dụng */}
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
     elevation: 3,
     flexDirection: "row",
     flexWrap: "wrap",
-    justifyContent: "space-between",
+    justifyContent: "flex-start",
   },
   boardInstruction: {
     width: 300,

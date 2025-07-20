@@ -16,6 +16,9 @@ import MetroMapScreen from "../screens/route/Route";
 import Guideline from "../screens/guideline/Guideline";
 import ProtectedScreen from "./ProtectedScreen";
 import PaymentSuccessScreen from "../components/paymentSuccess/PaymentSuccessScreen ";
+import Verification from "../screens/invoice/Verification";
+import ForgotPassword from "../screens/forgotPassword/ForgotPassword";
+import ResetPassword from "../screens/forgotPassword/ResetPassword";
 const Stack = createNativeStackNavigator();
 
 function StackNavigator() {
@@ -100,6 +103,21 @@ function StackNavigator() {
         name="PaymentSuccessScreen"
         component={PaymentSuccessScreen}
         options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Verification"
+        component={Verification}
+        options={{headerShown: false}}
+        />
+      <Stack.Screen
+      name="ForgotPassword"
+      component={ForgotPassword}
+      options={{headerShown: false}}
+      />
+      <Stack.Screen
+      name="ResetPassword"
+      component={ResetPassword}
+      options={{headerShown: false}}
       />
     </Stack.Navigator>
   );

@@ -2,7 +2,8 @@ import api from "../services/api.js";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { INTERNAL_SECRET } from "../utils/constants.js";
 
-//USER SERVICE
+/////USER SERVICE
+//Authentication-Controller
 //Login & Logout API
 export const fectchLoginAPI = async (data) => {
   const res = await api.post("/v1/auth/login", data);
@@ -21,6 +22,16 @@ export const fetchLoginGoogleAPI = async (data) => {
   return res.data;
 };
 
+export const createForgotPasswordAPI = async (data) => {
+  const res = await api.post("/v1/auth/forgot-password", data);
+  return res.data;
+}
+
+export const createResetPasswordAPI = async (data) => {
+  const res = await api.post("/v1/auth/reset-password", data);
+  return res.data;
+}
+
 //Register API
 export const createRegisterAPI = async (data) => {
   const res = await api.post("/v1/users/register", data);
@@ -38,7 +49,13 @@ export const updateUserAPI = async (userId, data) => {
   return res.data;
 };
 
-//ROUTE SERVICE
+//Student verification
+export const createVerificationStudentAPI = async (data) => {
+  const res = await api.post("/v1/student-verifications", data);
+  return res.data;
+}
+
+/////ROUTE SERVICE
 //Line API
 export const readLinesAPI = async () => {
   const res = await api.get("/v1/lines?page=1&size=10&sort=id");
@@ -69,26 +86,27 @@ export const readStationsAPI = async () => {
 //Bus API
 export const readBusByStationAPI = async (stationId) => {
   const res = await api.get(
-    `/v1/bus-routes/${stationId}/station?page=1&size=10&sort=id`
+    `/v1/bus-routes?stationId=${stationId}&page=1&size=10&sort=id`
   );
   return res.data;
 };
 
-//CONTENT SERVICE
+/////CONTENT SERVICE
 //Content API
 export const readContentAPI = async (content) => {
   const res = await api.get(
-    `/v1/contents/by-type?type=${content}&page=0&size=10`
+    `/v1/contents/by-type?type=${content}&page=1&size=10`
   );
   return res.data;
 };
 
+//API NÀY ĐỂ UPLOAD ẢNH LÊN AWS ĐỂ NÓ GỬI VỀ CHO MÌNH 1 CÁI URL https mới hiện được ảnh onl
 export const createUploadImageAPI = async (image) => {
   const res = await api.post("/v1/uploads/users", image);
   return res.data;
 };
 
-//ORDER SERVICE
+/////ORDER SERVICE
 //ticket-order API
 export const createTicketOrderAPI = async (data) => {
   const res = await api.post("/v1/ticket-orders", data);
@@ -137,14 +155,14 @@ export const getTicketOrdersAPI = async (params) => {
   return res.data;
 };
 
-//TICKET SERVICE
+/////TICKET SERVICE
 //ticket
 export const readTicketTypeAPI = async () => {
   const res = await api.get("/v1/ticket-types?page=1&size=10&sort=id");
   return res.data;
 };
 
-//PAYMENT SERVICE
+/////PAYMENT SERVICE
 export const createPaymentAPI = async (orderId) => {
   const res = await api.get(
     `/v1/payments/vn-pay?ticketOrderId=${orderId}&bankCode=NCB`

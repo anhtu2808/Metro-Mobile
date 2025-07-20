@@ -54,7 +54,7 @@ const handleTicketPress = async (ticketId) => {
           setExpiredTickets([]);
         }
       } catch (error) {
-        console.error("Error fetching expired tickets:", error);
+        console.log("Error fetching expired tickets:", error);
         setExpiredTickets([]);
       } finally {
         setLoading(false);

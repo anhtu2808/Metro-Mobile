@@ -66,12 +66,12 @@ const BuyTicket = () => {
     try {
       const response = await readTicketTypeAPI();
       if (!response || !response.result.data) {
-        console.error("No data received from API");
+        console.log("No data received from API");
         return;
       }
       setTicketTypes(response.result.data);
     } catch (error) {
-      console.error("Error fetching ticket types:", error);
+      console.log("Error fetching ticket types:", error);
     }
   };
 
@@ -92,12 +92,12 @@ const BuyTicket = () => {
     try {
       const response = await readLinesAPI();
       if (!response || !response.result.data) {
-        console.error("No data received from API");
+        console.log("No data received from API");
         return;
       }
       setLines(response.result.data);
     } catch (error) {
-      console.error("Error fetching lines:", error);
+      console.log("Error fetching lines:", error);
     }
   };
 
@@ -105,12 +105,12 @@ const BuyTicket = () => {
     try {
       const response = await readStartStationsByLineIdAPI(lineId);
       if (!response || !response.result) {
-        console.error("No data received from API");
+        console.log("No data received from API");
         return;
       }
       setStations(response.result);
     } catch (error) {
-      console.error("Error fetching stations:", error);
+      console.log("Error fetching stations:", error);
     }
   };
 
