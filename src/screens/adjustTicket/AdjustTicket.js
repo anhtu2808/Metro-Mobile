@@ -1,346 +1,417 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
-  StyleSheet,
+  FlatList,
   TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+  Alert,
   Modal,
-  Pressable,
-  Dimensions,
+  SafeAreaView,
 } from "react-native";
-import { Picker } from "@react-native-picker/picker";
 import { useNavigation } from "@react-navigation/native";
+import { useSelector } from "react-redux";
+import { getTicketOrdersAPI, readEndStationByLineIdStationIdAPI, createAdjustmentFare } from "../../apis";
+import { Picker } from "@react-native-picker/picker";
+import { WebView } from "react-native-webview";
 import Header from "../../components/header/Header";
-import TicketConfirmModal from "../../components/modal/TicketConfirmModal";
-
-const metroLines = [
-  {
-    id: "1",
-    name: "Tuyến 1: Bến Thành - Suối Tiên",
-    stations: [
-      "Bến Thành",
-      "Nhà hát Thành phố",
-      "Ba Son",
-      "Văn Thánh",
-      "Tân Cảng",
-      "Thảo Điền",
-      "An Phú",
-      "Rạch Chiếc",
-      "Phước Long",
-      "Bình Thái",
-      "Suối Tiên",
-    ],
-  },
-  {
-    id: "2",
-    name: "Tuyến 2: Bến Thành - Tham Lương",
-    stations: [
-      "Bến Thành",
-      "Dân Chủ",
-      "Hòa Hưng",
-      "Lê Thị Riêng",
-      "Phạm Văn Bạch",
-      "Tân Bình",
-      "Tân Phú",
-      "Tham Lương",
-    ],
-  },
-];
-
-const windowWidth = Dimensions.get("window").width;
 
 const AdjustTicket = () => {
-  const [selectedLine, setSelectedLine] = useState(metroLines[0].id);
-  const [startStation, setStartStation] = useState("");
-  const [endStation, setEndStation] = useState("");
-  const [modalVisible, setModalVisible] = useState(false);
-
   const navigation = useNavigation();
+  const { user } = useSelector((state) => state.user);
+  const [tickets, setTickets] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedTicket, setSelectedTicket] = useState(null);
+  const [stations, setStations] = useState([]);
+  const [selectedEndStationId, setSelectedEndStationId] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  const currentLine = metroLines.find((line) => line.id === selectedLine);
-  const stations = currentLine ? currentLine.stations : [];
-  const endStations = stations.filter((s) => s !== startStation);
+  // State hiển thị WebView thanh toán
+  const [paymentUrl, setPaymentUrl] = useState(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
-  const onChangeLine = (lineId) => {
-    setSelectedLine(lineId);
-    setStartStation("");
-    setEndStation("");
+  // Lấy vé lượt hợp lệ
+  const fetchTickets = async () => {
+    if (!user?.id) return;
+    setLoading(true);
+    try {
+      const data = {
+        page: 1,
+        size: 20,
+        userId: user.id,
+      };
+      const res = await getTicketOrdersAPI(data);
+      if (res?.result?.data) {
+        const filteredTickets = res.result.data.filter(
+          (t) =>
+            ["INACTIVE", "ACTIVE", "USING"].includes(t.status) &&
+            t.ticketType?.name?.toLowerCase().includes("vé lượt")
+        );
+        setTickets(filteredTickets);
+      } else {
+        setTickets([]);
+      }
+    } catch (error) {
+      console.error("Error fetching tickets:", error);
+      setTickets([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Tính giá vé mẫu (bạn có thể thay logic tính giá theo thực tế)
-  const getPrice = () => {
-    if (!startStation || !endStation) return "";
-    const startIdx = stations.indexOf(startStation);
-    const endIdx = stations.indexOf(endStation);
-    const numStations = Math.abs(endIdx - startIdx);
-    if (numStations <= 3) return "6.000 đ";
-    if (numStations <= 6) return "8.000 đ";
-    return "10.000 đ";
+  // Lấy các trạm kết thúc hợp lệ cho vé đã chọn
+  const fetchEndStations = async (lineId, startStationId) => {
+    if (!lineId || !startStationId) {
+      setStations([]);
+      return;
+    }
+    try {
+      const res = await readEndStationByLineIdStationIdAPI(lineId, startStationId);
+      if (Array.isArray(res?.result) && res.result.length > 0) {
+        setStations(res.result);
+      } else {
+        setStations([]);
+      }
+    } catch (error) {
+      console.error("Error fetching end stations:", error);
+      setStations([]);
+    }
+  };
+
+  useEffect(() => {
+    fetchTickets();
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (selectedTicket) {
+      const lineId = selectedTicket.lineId;
+      const startStationId = selectedTicket.startStation?.id;
+      if (!lineId) {
+        Alert.alert(
+          "Không xác định được tuyến (line) của vé này.",
+          "Dữ liệu vé của bạn thiếu thông tin tuyến. Vui lòng liên hệ hỗ trợ hoặc chọn vé khác."
+        );
+        setStations([]);
+        setSelectedEndStationId(null);
+        return;
+      }
+      if (!startStationId) {
+        Alert.alert(
+          "Không xác định được ga xuất phát của vé này.",
+          "Dữ liệu vé của bạn thiếu thông tin ga xuất phát. Vui lòng liên hệ hỗ trợ hoặc chọn vé khác."
+        );
+        setStations([]);
+        setSelectedEndStationId(null);
+        return;
+      }
+      fetchEndStations(lineId, startStationId);
+      setSelectedEndStationId(null);
+    } else {
+      setStations([]);
+      setSelectedEndStationId(null);
+    }
+  }, [selectedTicket]);
+
+  // Xử lý điều chỉnh vé và hiển thị WebView thanh toán
+  const handleAdjustFare = async () => {
+    if (!selectedTicket) {
+      Alert.alert("Lỗi", "Bạn chưa chọn vé.");
+      return;
+    }
+    if (!selectedEndStationId) {
+      Alert.alert("Lỗi", "Vui lòng chọn trạm kết thúc mới.");
+      return;
+    }
+
+    if (!stations.find((s) => s.id === selectedEndStationId)) {
+      Alert.alert("Lỗi", "Trạm kết thúc chọn không hợp lệ");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const ticketOrderId = selectedTicket.id;
+      const newEndStationId = selectedEndStationId;
+      const res = await createAdjustmentFare(ticketOrderId, newEndStationId);
+
+      if (res?.code === 200) {
+        if (res?.result?.vnPayResponse?.paymentUrl) {
+          // Mở WebView thanh toán thông thường
+          setPaymentUrl(res.result.vnPayResponse.paymentUrl);
+          setShowPaymentModal(true);
+        } else {
+          fetchTickets();
+          setSelectedTicket(null);
+          setSelectedEndStationId(null);
+          navigation.navigate("PaymentSuccessScreen");
+        }
+      } else {
+        Alert.alert("Lỗi", res?.message || "Không thể tạo đơn điều chỉnh vé.");
+      }
+    } catch (error) {
+      console.error("Error adjust fare:", error.response?.data || error.message);
+      Alert.alert(
+        "Lỗi2",
+        error.response?.data?.message || "Có lỗi xảy ra, vui lòng thử lại."
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Handle điều hướng WebView theo url
+  const handleWebViewNavigationStateChange = (navState) => {
+    const url = navState.url;
+    // TODO: Thay chuỗi này theo callback url backend báo thành công/thất bại thực tế của VNPay
+    if (url.includes("payment-success")) {
+      setShowPaymentModal(false);
+      navigation.navigate("PaymentSuccessScreen");
+      // Reload vé sau khi thanh toán thành công
+      fetchTickets();
+      setSelectedTicket(null);
+      setSelectedEndStationId(null);
+    } else if (url.includes("payment-failure")) {
+      setShowPaymentModal(false);
+      Alert.alert("Thanh toán thất bại", "Vui lòng thử lại.");
+    }
+  };
+
+  // Render từng vé trong FlatList
+  const renderItem = ({ item }) => {
+    let statusText = "";
+    let statusStyle = {};
+    switch (item.status) {
+      case "ACTIVE":
+        statusText = "Đã kích hoạt";
+        statusStyle = styles.statusActive;
+        break;
+      case "USING":
+        statusText = "Đang sử dụng";
+        statusStyle = styles.statusUsing;
+        break;
+      case "INACTIVE":
+        statusText = "Chưa sử dụng";
+        statusStyle = styles.statusInactive;
+        break;
+      default:
+        statusText = item.status;
+        statusStyle = {};
+    }
+
+    return (
+      <TouchableOpacity
+        style={[
+          styles.ticketBox,
+          selectedTicket?.id === item.id && styles.ticketBoxSelected,
+        ]}
+        onPress={() => setSelectedTicket(item)}
+        activeOpacity={0.9}
+      >
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+          <Text style={styles.ticketTitle}>{item.ticketType?.name || "Vé 1 ngày"}</Text>
+          <Text style={[styles.statusBase, statusStyle]}>{statusText}</Text>
+        </View>
+        <Text style={styles.ticketTime}>
+          {new Date(item.purchaseDate).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}{" "}
+          {new Date(item.purchaseDate).toLocaleDateString()}
+        </Text>
+        <View>
+        <Text>
+              {item.startStation?.name} → {item.endStation?.name}
+          </Text>
+        <View style={{ height: 10 }} />
+        <Text style={styles.ticketPrice}>{item.price?.toLocaleString("vi-VN")} đ</Text>
+        </View>
+      </TouchableOpacity>
+    );
   };
 
   return (
-    <View style={styles.container}>
-      <Header name="Điều chỉnh giá vé" />
+    <SafeAreaView style={styles.container}>
+      <Header name="Điều chỉnh vé" />
+      {loading ? (
+        <ActivityIndicator size="large" color="#1976d2" />
+      ) : tickets.length === 0 ? (
+        <Text style={styles.emptyText}>Bạn không có vé lượt nào phù hợp.</Text>
+      ) : (
+        <FlatList
+          data={tickets}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderItem}
+        />
+      )}
 
-      {/* Select tuyến metro */}
-      <Text style={styles.label}>Chọn tuyến đường metro</Text>
-      <View style={styles.pickerBox}>
-        <Picker
-          selectedValue={selectedLine}
-          onValueChange={onChangeLine}
-          style={styles.picker}
-        >
-          {metroLines.map((line) => (
-            <Picker.Item label={line.name} value={line.id} key={line.id} />
-          ))}
-        </Picker>
-      </View>
+      {selectedTicket && (
+        <>
+          <Text style={styles.title}>Chọn trạm kết thúc mới</Text>
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={selectedEndStationId}
+              onValueChange={(val) => setSelectedEndStationId(val)}
+              style={styles.picker}
+            >
+              <Picker.Item label="-- Chọn trạm --" value={null} />
+              {stations.map((station) => (
+                <Picker.Item key={station.id} label={station.name} value={station.id} />
+              ))}
+            </Picker>
+          </View>
 
-      {/* Select ga đầu */}
-      <Text style={styles.label}>Chọn trạm ga điểm đầu</Text>
-      <View style={styles.pickerBox}>
-        <Picker
-          selectedValue={startStation}
-          onValueChange={(val) => {
-            setStartStation(val);
-            if (val === endStation) setEndStation("");
-          }}
-          style={styles.picker}
-        >
-          <Picker.Item label="Chọn ga điểm đầu" value="" />
-          {stations.map((station) => (
-            <Picker.Item label={station} value={station} key={station} />
-          ))}
-        </Picker>
-      </View>
+          <TouchableOpacity
+            style={[styles.button, submitting && styles.buttonDisabled]}
+            onPress={handleAdjustFare}
+            disabled={submitting}
+          >
+            {submitting ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>Điều chỉnh vé & Thanh toán</Text>
+            )}
+          </TouchableOpacity>
+        </>
+      )}
 
-      {/* Select ga cuối */}
-      <Text style={styles.label}>Chọn trạm ga điểm cuối</Text>
-      <View style={styles.pickerBox}>
-        <Picker
-          selectedValue={endStation}
-          onValueChange={setEndStation}
-          style={styles.picker}
-          enabled={!!startStation}
-        >
-          <Picker.Item label="Chọn ga điểm cuối" value="" />
-          {endStations.map((station) => (
-            <Picker.Item label={station} value={station} key={station} />
-          ))}
-        </Picker>
-      </View>
-
-      {/* Hiển thị kết quả chọn */}
-      {startStation && endStation ? (
-        <View style={styles.resultBox}>
-          <Text style={styles.resultText}>
-            Bạn chọn: {startStation} → {endStation} ({currentLine.name})
-          </Text>
-        </View>
-      ) : null}
-
-      {/* Nút thanh toán */}
-      <TouchableOpacity
-        style={[
-          styles.payButton,
-          !(startStation && endStation) && { backgroundColor: "#B0B0B0" },
-        ]}
-        disabled={!(startStation && endStation)}
-        onPress={() => setModalVisible(true)}
-      >
-        <Text style={styles.payButtonText}>Thanh toán</Text>
-      </TouchableOpacity>
-
-      <TicketConfirmModal
-        visible={modalVisible}
-        onClose={() => setModalVisible(false)}
-        title={`${startStation} → ${endStation}`}
-        infoRows={[
-          { label: "Tuyến: ", value: currentLine.name },
-          { label: "Loại vé: ", value: `${startStation} → ${endStation}` },
-          { label: "Giá vé: ", value: getPrice() },
-          {
-            label: "Lưu ý: ",
-            value: "Vé có hiệu lực 24h kể từ khi kích hoạt",
-            isWarning: true,
-          },
-        ]}
-        price={getPrice()}
-        onBuy={() => {
-          setModalVisible(false);
-          navigation.navigate("Invoice", {
-            ticket: {
-              name: `${startStation} → ${endStation}`,
-              price: getPrice(),
-              line: currentLine.name,
-            },
-          });
-        }}
-      />
-    </View>
+      <Modal visible={showPaymentModal} animationType="slide">
+        <SafeAreaView style={{ flex: 1 }}>
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={() => setShowPaymentModal(false)}
+          >
+            <Text
+              style={{ color: "white", textAlign: "center", fontSize: 16 }}
+            >
+              Đóng
+            </Text>
+          </TouchableOpacity>
+          {paymentUrl ? (
+            <WebView
+              source={{ uri: paymentUrl }}
+              onNavigationStateChange={handleWebViewNavigationStateChange}
+              startInLoadingState
+              style={{ flex: 1 }}
+            />
+          ) : (
+            <ActivityIndicator size="large" style={{ flex: 1 }} />
+          )}
+        </SafeAreaView>
+      </Modal>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#ebf7fa", padding: 20 },
-  title: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: "#2D2E82",
-    marginBottom: 20,
-  },
-  label: { fontSize: 16, color: "#222", marginTop: 16, marginBottom: 4 },
-  pickerBox: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#E0E0E0",
-    marginBottom: 4,
-    overflow: "hidden",
-  },
-  picker: { height: 50, width: "100%" },
-  payButton: {
-    backgroundColor: "#1976d2",
-    borderRadius: 22,
-    width: "100%",
-    alignItems: "center",
-    paddingVertical: 15,
-    marginTop: 28,
-    elevation: 2,
-  },
-  payButtonText: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "bold",
-    letterSpacing: 0.5,
-  },
-  modalOverlay: {
+  container: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.55)",
-    justifyContent: "center",
-    alignItems: "center",
+    padding: 18,
+    backgroundColor: "#f0f4f8",
   },
-  modalContent: {
-    width: windowWidth * 0.92,
-    backgroundColor: "#f7fbff",
-    borderRadius: 28,
-    alignItems: "center",
-    paddingTop: 28,
-    paddingBottom: 20,
-    paddingHorizontal: 18,
-    shadowColor: "#1976d2",
-    shadowOpacity: 0.18,
-    shadowOffset: { width: 0, height: 6 },
-    shadowRadius: 18,
-    borderWidth: 1.5,
-    borderColor: "#1976d2",
-  },
-  modalTitle: {
-    fontSize: 22,
-    fontWeight: "bold",
+  title: {
+    fontSize: 18,
+    fontWeight: "700",
     color: "#1976d2",
-    marginBottom: 18,
-    letterSpacing: 1,
+    marginVertical: 8,
+  },
+  emptyText: {
+    fontStyle: "italic",
+    color: "#999",
+    marginTop: 20,
     textAlign: "center",
   },
-  ticketInfo: {
-    width: "100%",
-    backgroundColor: "#eaf6ff",
-    borderRadius: 16,
-    padding: 12,
-    marginBottom: 10,
+  ticketBox: {
+    backgroundColor: "#fff",
+    borderRadius: 15,
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    marginVertical: 6,
+    marginHorizontal: 0,
+    minHeight: 65,
+    elevation: 1,
+    shadowColor: "#000",
+    shadowOpacity: 0.07,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 5,
     borderWidth: 1,
-    borderColor: "#bbdefb",
+    borderColor: "#dfe8ef",
   },
-  row: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    marginBottom: 8,
-    flexWrap: "wrap",
+  ticketBoxSelected: {
+    borderWidth: 2,
+    borderColor: "#1976d2",
   },
-  labelInfo: {
-    fontWeight: "bold",
+  ticketTitle: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#212121",
+  },
+  statusBase: {
+    fontSize: 13,
+    fontWeight: "600",
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 2,
+    overflow: "hidden", // fix border radius
+    marginLeft: 6,
+    minWidth: 56,
+    textAlign: "center",
+  },
+  statusUsing: {
+    backgroundColor: "#e8f5e9",
+    color: "#388e3c",
+  },
+  statusActive: {
+    backgroundColor: "#e3f2fd",
     color: "#1976d2",
-    fontSize: 16,
-    minWidth: 78,
   },
-  valueInfo: {
-    color: "#1a237e",
-    fontSize: 16,
-    flexShrink: 1,
+  statusInactive: {
+    backgroundColor: "#dedfe0",
+    color: "#97999c",
   },
-  labelRed: {
+  ticketTime: {
+    fontSize: 13,
+    color: "#8b909a",
+    marginTop: 4,
+  },
+  ticketPrice: {
+    position: "absolute",
+    right: 14,
+    bottom: 12,
     fontWeight: "bold",
-    color: "#e53935",
     fontSize: 16,
-    minWidth: 78,
+    color: "#1a1a1a",
   },
-  valueRed: {
-    color: "#e53935",
-    fontSize: 16,
-    flexShrink: 1,
+  pickerContainer: {
+    marginVertical: 12,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 10,
+    overflow: "hidden",
+    backgroundColor: "#fff",
   },
-  dashedLineContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginVertical: 16,
+  picker: {
+    height: 50,
     width: "100%",
-    justifyContent: "center",
   },
-  dashedLine: {
-    flex: 1,
-    borderBottomWidth: 1.5,
-    borderStyle: "dashed",
-    borderColor: "#1976d2",
-    marginHorizontal: 2,
-  },
-  circleLeft: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: "#f7fbff",
-    borderWidth: 2,
-    borderColor: "#1976d2",
-    marginRight: -9,
-    zIndex: 1,
-  },
-  circleRight: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: "#f7fbff",
-    borderWidth: 2,
-    borderColor: "#1976d2",
-    marginLeft: -9,
-    zIndex: 1,
-  },
-  buyButton: {
+  button: {
     backgroundColor: "#1976d2",
-    borderRadius: 22,
-    width: "96%",
+    paddingVertical: 14,
+    borderRadius: 10,
+    marginTop: 12,
     alignItems: "center",
-    paddingVertical: 13,
-    marginTop: 2,
-    elevation: 2,
-    shadowColor: "#1976d2",
-    shadowOpacity: 0.12,
-    shadowOffset: { width: 0, height: 3 },
-    shadowRadius: 6,
   },
-  buyButtonText: {
+  buttonDisabled: {
+    backgroundColor: "#a0a7d6",
+  },
+  buttonText: {
+    fontSize: 16,
     color: "#fff",
-    fontSize: 18,
-    fontWeight: "bold",
-    letterSpacing: 0.5,
+    fontWeight: "700",
   },
-  resultBox: {
-    backgroundColor: "#E3F0FF",
-    borderRadius: 12,
-    marginTop: 28,
-    padding: 16,
-    alignItems: "center",
+  closeButton: {
+    backgroundColor: "#1976d2",
+    paddingVertical: 10,
+    margin: 12,
+    borderRadius: 10,
   },
-  resultText: { color: "#2D2E82", fontSize: 16, fontWeight: "500" },
 });
 
 export default AdjustTicket;
