@@ -13,7 +13,9 @@ export const handleUpdateUser = async ({
   onError,
 }) => {
   try {
-    // Thêm header Authorization nếu API cần
+    // Thêm header Authorization nếu API cần 
+    console.log("userrrrrrrrrr", userId);
+    console.log("dataaaaaaaaa", data);
     const res = await api.put(`/v1/users/${userId}`, data, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -58,4 +60,42 @@ export const uploadImageToServer = async (uri) => {
     return uploadRes.data.result;
   }
   throw new Error("Upload ảnh thất bại");
+};
+
+export const handleVerifyUser = async ({
+  userId,
+  data,
+  dispatch,
+  accessToken,
+  onSuccess,
+  onError,
+}) => {
+  try {
+    // Thêm header Authorization nếu API cần 
+    console.log("userrrrrrrrrr", userId);
+    console.log("dataaaaaaaaa", data);
+    const res = await api.put(`/v1/users/${userId}`, data, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    if (res.data.code === 200 && res.data.result) {
+      await AsyncStorage.setItem("user", JSON.stringify(res.data.result));
+      dispatch(
+        loginSuccess({
+          user: res.data.result,
+          accessToken,
+        })
+      );
+      if (onSuccess) onSuccess(res.data.result);
+      return true;
+    } else {
+      if (onError) onError(res.data);
+      return false;
+    }
+  } catch (e) {
+    if (onError) onError(e);
+    return false;
+  }
 };

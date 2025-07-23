@@ -155,6 +155,15 @@ export const getTicketOrdersAPI = async (params) => {
   return res.data;
 };
 
+//adjustment fare
+export const createAdjustmentFare = async (ticketOrderId, newEndStationId) => {
+  const res = await api.post(
+    `/v1/ticket-orders/${ticketOrderId}/adjust-fare?newEndStationId=${newEndStationId}`
+  );
+  return res.data;
+};
+
+
 /////TICKET SERVICE
 //ticket
 export const readTicketTypeAPI = async () => {
@@ -169,3 +178,8 @@ export const createPaymentAPI = async (orderId) => {
   );
   return res.data.data.paymentUrl;
 };
+
+export const readTransactionAPI = async (userId ) => {
+  const res = await api.get(`/v1/transactions/user/${userId}?page=0&size=10`);
+  return res.data;
+}

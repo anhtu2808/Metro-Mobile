@@ -243,7 +243,7 @@ const TicketModal = ({ visible, onClose, ticketId, onActivated, ticketInfo }) =>
                   <Text>Trở về</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.confirmBtn, { backgroundColor: "#ff9800" }]}
+                  style={[styles.confirmBtn, { backgroundColor: "#1976d2" }]}
                   onPress={handleActivate}
                 >
                   <Text style={{ color: "#fff" }}>Đồng ý</Text>
@@ -391,7 +391,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   confirmTitle: {
-    color: "#ff9800",
+    color: "#1976d2",
     fontWeight: "bold",
     fontSize: 18,
     marginBottom: 10,

@@ -6,6 +6,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Header from "../../components/header/Header";
 import { uploadImageToServer } from '../account/userHelpers'; 
 import * as ImagePicker from 'expo-image-picker';
+import { createVerificationStudentAPI } from "../../apis";
+import api from "../../services/api";
 
 const Verification = ({ navigation }) => {
   const { user } = useSelector(state => state.user);
@@ -13,46 +15,89 @@ const Verification = ({ navigation }) => {
 
   const [schoolName, setSchoolName] = useState("");
   const [graduateDate, setGraduateDate] = useState("");
-  const [imageUrl, setImageUrl] = useState(""); // Có thể thêm upload ảnh nếu cần
   const [loading, setLoading] = useState(false);
   const [imageUri, setImageUri] = useState(null);
   const [showActionModal, setShowActionModal] = useState(false);
+  console.log("ảnhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh", imageUri);
 
-  const handleSubmit = async () => {
+
+//   const handleSubmit = async () => {
+//   if (!schoolName || !graduateDate || !imageUri) {
+//     Alert.alert("Vui lòng nhập đầy đủ thông tin và chọn ảnh.");
+//     return;
+//   }
+
+//   setLoading(true);
+//   try {
+//     const success = await handleUpdateUser({
+//       userId: user.id,
+//       data: {
+//         schoolName,
+//         graduateDate,
+//         imageUrl: imageUri, // url ảnh upload
+//         status: "PENDING",
+//       },
+//       dispatch,
+//       accessToken: user.accessToken,
+//       onSuccess: () => {
+//         Alert.alert(
+//           "Thành công",
+//           "Đã gửi yêu cầu xác minh. Vui lòng đợi admin duyệt.",
+//           [{ text: "OK", onPress: () => navigation.navigate("Home") }]
+//         );
+//       },
+//       onError: () => {
+//         Alert.alert("Lỗi", "Gửi yêu cầu xác minh thất bại");
+//       },
+//     });
+
+//     if (!success) {
+//       Alert.alert("Lỗi", "Không thể gửi yêu cầu xác minh");
+//     }
+//   } catch (error) {
+//     Alert.alert("Lỗi", "Có lỗi xảy ra, vui lòng thử lại");
+//   } finally {
+//     setLoading(false);
+//   }
+// };
+
+const handleSubmit = async () => {
   if (!schoolName || !graduateDate || !imageUri) {
     Alert.alert("Vui lòng nhập đầy đủ thông tin và chọn ảnh.");
     return;
   }
 
+  console.log(graduateDate);
+
   setLoading(true);
   try {
-    const success = await handleUpdateUser({
-      userId: user.id,
-      data: {
-        schoolName,
-        graduateDate,
-        imageUrl: imageUri, // url ảnh upload
-        status: "PENDING",
-      },
-      dispatch,
-      accessToken: user.accessToken,
-      onSuccess: () => {
-        Alert.alert(
-          "Thành công",
-          "Đã gửi yêu cầu xác minh. Vui lòng đợi admin duyệt.",
-          [{ text: "OK", onPress: () => navigation.navigate("Home") }]
-        );
-      },
-      onError: () => {
-        Alert.alert("Lỗi", "Gửi yêu cầu xác minh thất bại");
-      },
-    });
-
-    if (!success) {
-      Alert.alert("Lỗi", "Không thể gửi yêu cầu xác minh");
+    const data = {
+      schoolName,
+      graduateDate,
+      imageUrl: imageUri, // ảnh đã upload
+     status: "PENDING",    
+    };
+    const res = await api.post("/v1/student-verifications", data, {
+    headers: {
+      Authorization: `Bearer ${user.accessToken}`,
+    },
+  });
+  console.log(res?.data.code);
+    if (res?.data.code === 201) {
+      Alert.alert(
+        "Thành công",
+        "Đã gửi yêu cầu xác minh. Vui lòng đợi admin duyệt.",
+        [{ text: "OK", onPress: () => navigation.navigate("Home") }]
+      );
+    } else {
+      Alert.alert("Lỗiiii", res?.message || "Gửi yêu cầu xác minh thất bại");
     }
   } catch (error) {
-    Alert.alert("Lỗi", "Có lỗi xảy ra, vui lòng thử lại");
+    console.error("Lỗi xác minh SV:", error.response?.data || error.message);
+    Alert.alert(
+    "Lỗi", 
+    error.response?.data?.message || error.response?.data?.error || error.message || "Có lỗi xảy ra, vui lòng thử lại."
+    );
   } finally {
     setLoading(false);
   }
@@ -105,6 +150,22 @@ const handleUpload = async (uri) => {
   }
 };
 
+const formatDateInput = (text) => {
+  // Loại bỏ hết ký tự không phải số
+  const cleaned = text.replace(/\D/g, '');
+
+  // Giới hạn tối đa 8 ký tự (YYYYMMDD)
+  let formatted = '';
+  if (cleaned.length <= 4) {
+    formatted = cleaned;
+  } else if (cleaned.length <= 6) {
+    formatted = `${cleaned.slice(0,4)}-${cleaned.slice(4)}`;
+  } else {
+    formatted = `${cleaned.slice(0,4)}-${cleaned.slice(4,6)}-${cleaned.slice(6,8)}`;
+  }
+  return formatted;
+};
+
   return (
     <>
     <Header name="Xác minh học sinh sinh viên"/>
@@ -112,7 +173,7 @@ const handleUpload = async (uri) => {
       <Text>Trường học</Text>
       <TextInput style={styles.input} value={schoolName} onChangeText={setSchoolName} placeholder="Tên trường học" />
       <Text>Ngày tốt nghiệp (ghi trên thẻ hssv)</Text>
-      <TextInput style={styles.input} value={graduateDate} onChangeText={setGraduateDate} placeholder="YYYY-MM-DD" />
+      <TextInput style={styles.input} value={graduateDate} onChangeText={text => setGraduateDate(formatDateInput(text))} placeholder="YYYY-MM-DD" keyboardType="number-pad" maxLength={10}/>
       <View style={{ marginBottom: 20 }}>
   <Text>Ảnh thẻ học sinh sinh viên (bắt buộc):</Text>
   {imageUri ? (

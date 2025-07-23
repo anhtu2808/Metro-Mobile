@@ -144,6 +144,11 @@ export default function HomeScreen() {
             </View>
 
             <View style={styles.iconBox}>
+              <MaterialIcons name="chat" size={30} color="#1976d2" />
+              <Text style={styles.iconLabel}>Nhận xét</Text>
+            </View>
+
+            <View style={styles.iconBox}>
               <TouchableOpacity
                 style={styles.iconButton}
                 onPress={() => {
@@ -161,10 +166,6 @@ export default function HomeScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* <View style={styles.iconBox}>
-              <MaterialIcons name="chat" size={30} color="#1976d2" />
-              <Text style={styles.iconLabel}>Nhận xét</Text>
-            </View> */}
           </View>
 
           {/* Hướng dẫn sử dụng */}
@@ -245,7 +246,7 @@ const styles = StyleSheet.create({
     elevation: 3,
     flexDirection: "row",
     flexWrap: "wrap",
-    justifyContent: "flex-start",
+    justifyContent: "space-between",
   },
   boardInstruction: {
     width: 300,
