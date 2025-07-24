@@ -112,6 +112,7 @@ const Invoice = ({ route }) => {
   const onWebViewNavigationStateChange = (navState) => {
     const { url } = navState;
     // Nếu backend redirect về URL thành công, bạn cần thay đổi điều kiện dưới đây cho đúng
+    // if (url.includes("vnpay-callback") || url.includes("payment-success")) {
     if (url.includes("vnpay-callback") || url.includes("payment-success")) {
       setPaymentModal(false);
 

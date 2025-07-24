@@ -113,6 +113,7 @@ export const createTicketOrderAPI = async (data) => {
   return res.data;
 };
 
+//ticket order all
 export const updateStatusActiveTicketOrderAPI = async (orderId, status) => {
   const token = await AsyncStorage.getItem("accessToken");
   const res = await api.put(
