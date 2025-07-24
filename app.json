@@ -1,0 +1,37 @@
+{
+  "expo": {
+    "name": "Metro-Mobile",
+    "slug": "Metro-Mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./src/assets/metro.jpg",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./src/assets/metro.jpg",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.contraicung.MetroMobile"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./src/assets/metro.jpg",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.contraicung.MetroMobile"
+    },
+    "web": {
+      "favicon": "./src/assets/metro.jpg"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "97b27b2e-6bdb-463d-9297-2fe69f27c449"
+      }
+    },
+    "plugins": ["expo-web-browser"]
+  }
+}
